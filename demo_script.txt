@@ -1,0 +1,35 @@
+学习交流社区 — 演示脚本
+
+1)安装下载redis：https://github.com/redis-windows/redis-windows/releases
+
+2)在终端手动启动redis服务，命令：redis-server.exe redis.conf
+
+3)安装mysql，创建数据库：learning_db
+
+4)根据.\test_data.sql在learning_db中创建表
+
+5)在IDEA中将项目加载为Maven项目
+
+6)修改配置文件.\backend\src\main\resources\application.properties中的端口（根据电脑使用情况随意）、Mysql用户名和密码
+
+7)启动后端服务: .\backend\src\main\java\com\example\app\Application
+
+8)待完成功能：管理员功能、标记最佳答案功能、实时通知功能、通过关键字检索问题功能、前端代码
+
+9)postman_collection.json——API测试文件（已经全部测试通过）
+
+10)前端: npm install && npm run dev（该条指令由AI生成，暂无前端代码，没有测试）
+
+演示流程 (时长约 4-6 分钟):
+A. 首页: 打开问题列表，展示已有问题
+B. 注册 & 登录: 用 alice@example.com 登录（或先注册），演示 JWT 返回 token
+C. 提问: 点击发布问题，填写标题与内容 -> 提交 -> 后端保存
+D. 回答: 另一个用户登录后对该问题进行回答 -> 回答展示在问题详情
+E. 点赞: 登录用户对回答点击“点赞”，后端调用 Redis 增量并记录（展示 Redis key）
+F. 标记最佳答案: 提问者选择最佳答案，前端显示“最佳”标识
+G. 上传资源: 演示上传一份资料（或提交一个链接）并在资源列表查看
+H. 实时通知: 演示 WebSocket，当有人回答或点赞触发通知（若部署请先开启 WebSocket）
+
+演示要点提示:
+- 强调技术亮点：JWT 证书化、Redis 点赞缓存、WebSocket 实时通知
+- 如果老师问并发/高并发如何处理：说明使用 Redis 防重、数据库行锁/乐观锁等策略

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.app.mapper.AnswerMapper">
+
+    <resultMap id="AnswerResultMap" type="com.example.app.model.Answer">
+        <id property="id" column="id" />
+        <result property="questionId" column="question_id" />
+        <result property="userId" column="user_id" />
+        <result property="content" column="content" />
+    </resultMap>
+
+    <select id="selectById" parameterType="Long" resultMap="AnswerResultMap">
+        SELECT * FROM answers WHERE id = #{id}
+    </select>
+
+    <select id="selectByQuestionId" parameterType="Long" resultMap="AnswerResultMap">
+        SELECT * FROM answers WHERE question_id = #{qid}
+    </select>
+
+    <insert id="insert" parameterType="com.example.app.model.Answer" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO answers (question_id, user_id, content)
+        VALUES (#{questionId}, #{userId}, #{content})
+    </insert>
+
+</mapper>

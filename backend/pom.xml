@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <!-- =========================================================== -->
+    <!--                    POM 基本信息配置                         -->
+    <!-- =========================================================== -->
+    <modelVersion>4.0.0</modelVersion>  <!-- Maven 模型版本 -->
+
+    <!-- 项目坐标 - 全球唯一标识 -->
+    <groupId>com.example</groupId>       <!-- 组织或公司域名反写 -->
+    <artifactId>learning-community</artifactId>  <!-- 项目名称 -->
+    <version>1.0.0</version>             <!-- 项目版本号 -->
+    <packaging>jar</packaging>           <!-- 打包方式：jar/war -->
+
+    <!-- 项目描述信息 -->
+    <name>Learning Community Backend</name>        <!-- 项目显示名称 -->
+    <description>学习社区后端项目 - Spring Boot应用</description>  <!-- 项目描述 -->
+
+    <!-- =========================================================== -->
+    <!--                   Spring Boot 父依赖                        -->
+    <!-- =========================================================== -->
+    <!--
+        使用 Spring Boot 父POM可以：
+        1. 统一管理所有依赖版本
+        2. 提供默认的Maven插件配置
+        3. 简化依赖管理
+        4. 自动解决安全漏洞问题
+    -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.7.0</version>  <!-- 使用较新版本解决安全漏洞 -->
+        <relativePath/>  <!-- 不从本地查找，直接从仓库下载 -->
+    </parent>
+
+    <!-- =========================================================== -->
+    <!--                    项目属性配置                             -->
+    <!-- =========================================================== -->
+    <properties>
+        <!-- Java 版本配置 -->
+        <java.version>1.8</java.version>                    <!-- 源代码兼容版本 -->
+        <maven.compiler.source>1.8</maven.compiler.source>  <!-- 编译源代码版本 -->
+        <maven.compiler.target>1.8</maven.compiler.target>  <!-- 生成类文件版本 -->
+
+        <!-- 项目编码配置 -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>  <!-- 源代码编码 -->
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>  <!-- 报告输出编码 -->
+
+        <!--
+            安全修复：手动指定安全版本覆盖父POM中的漏洞版本
+            注意：Spring Boot 2.7.0 已经包含了这些库的安全版本
+                 这里显式声明是为了确保使用安全版本
+        -->
+        <jackson.version>2.13.4</jackson.version>    <!-- Jackson JSON处理库安全版本 -->
+        <logback.version>1.2.12</logback.version>     <!-- Logback日志框架安全版本 -->
+    </properties>
+
+    <!-- =========================================================== -->
+    <!--                    项目依赖配置                             -->
+    <!-- =========================================================== -->
+    <dependencies>
+        <!--
+            Spring Boot Web Starter - REST API支持
+            包含：Spring MVC, Tomcat, Jackson, 验证等
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <!--
+                注意：这里不需要排除logback，因为Spring Boot 2.7.0
+                已经使用了安全的Logback版本 (1.2.12+)
+            -->
+        </dependency>
+
+        <!--
+            Spring Boot Data Redis Starter - Redis缓存支持
+            包含：Lettuce客户端, Spring Data Redis
+            用于：点赞功能、缓存数据
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <!--
+            MyBatis Spring Boot Starter - 数据库ORM框架
+            用于：用户、问题、回答、资源的数据持久化
+        -->
+        <dependency>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <version>2.2.2</version>  <!-- 与Spring Boot 2.7.0兼容的版本 -->
+        </dependency>
+
+        <!--
+            MySQL Connector - MySQL数据库驱动
+            用于：连接MySQL数据库
+        -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.33</version>  <!-- MySQL 8.0兼容版本 -->
+            <!--
+                注意：如果使用MySQL 5.x，需要改为：
+                <version>5.1.49</version>
+            -->
+        </dependency>
+
+        <!--
+            JJWT - JWT令牌生成和解析
+            用于：用户认证、生成和验证JWT token
+        -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.9.1</version>  <!-- JWT处理库 -->
+        </dependency>
+
+        <!--
+            Spring Boot Test Starter - 测试支持 (测试范围)
+            包含：JUnit, Spring Test, AssertJ, Mockito等
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>  <!-- 仅在测试时使用，不打包到生产 -->
+        </dependency>
+
+        <!--
+            可选：Lombok - 减少样板代码 (根据需求添加)
+            用于：自动生成getter/setter/toString等
+        -->
+        <!--
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        -->
+    </dependencies>
+
+    <!-- =========================================================== -->
+    <!--                    Maven 构建配置                           -->
+    <!-- =========================================================== -->
+    <build>
+        <plugins>
+            <!--
+                Spring Boot Maven 插件
+                功能：
+                1. 打包可执行JAR
+                2. 运行Spring Boot应用
+                3. 生成启动脚本
+            -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!-- 指定主启动类 (可选，Maven会自动查找) -->
+                    <!--
+                    <mainClass>com.example.app.Application</mainClass>
+                    -->
+                    <excludes>
+                        <!-- 排除开发工具，减少生产包大小 -->
+                        <exclude>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-devtools</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <!--
+                Maven 编译器插件
+                确保使用正确的Java版本编译
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>1.8</source>    <!-- 源代码级别 -->
+                    <target>1.8</target>    <!-- 目标字节码级别 -->
+                    <encoding>UTF-8</encoding>  <!-- 编译时编码 -->
+                </configuration>
+            </plugin>
+
+            <!--
+                可选：Maven 资源过滤插件
+                用于处理配置文件中的Maven属性
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+        </plugins>
+
+        <!-- 资源文件配置 -->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>  <!-- 启用资源过滤 -->
+                <includes>
+                    <include>**/*.properties</include>
+                    <include>**/*.yml</include>
+                    <include>**/*.xml</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.xml</include>  <!-- 包含MyBatis映射文件 -->
+                </includes>
+            </resource>
+        </resources>
+    </build>
+
+    <!-- =========================================================== -->
+    <!--                    项目仓库配置                             -->
+    <!-- =========================================================== -->
+    <!--
+        如果需要使用额外的Maven仓库，可以在这里配置
+        默认使用Maven中央仓库
+    -->
+    <repositories>
+        <repository>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+</project>

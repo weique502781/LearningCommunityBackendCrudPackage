@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.app.mapper.ResourceMapper">
+
+    <resultMap id="ResourceResultMap" type="com.example.app.model.Resource">
+        <id property="id" column="id" />
+        <result property="userId" column="user_id" />
+        <result property="title" column="title" />
+        <result property="url" column="url" />
+    </resultMap>
+
+    <select id="selectById" parameterType="Long" resultMap="ResourceResultMap">
+        SELECT * FROM resources WHERE id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="ResourceResultMap">
+        SELECT * FROM resources ORDER BY id DESC
+    </select>
+
+    <insert id="insert" parameterType="com.example.app.model.Resource" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO resources (user_id, title, url)
+        VALUES (#{userId}, #{title}, #{url})
+    </insert>
+
+</mapper>

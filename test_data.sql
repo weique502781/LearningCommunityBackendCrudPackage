@@ -1,0 +1,36 @@
+-- 使用你的数据库
+USE learning_db;
+
+-- 用户表
+CREATE TABLE IF NOT EXISTS users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    nickname VARCHAR(100),
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 问题表
+CREATE TABLE IF NOT EXISTS questions (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    content TEXT,
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 回答表
+CREATE TABLE IF NOT EXISTS answers (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    question_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    content TEXT NOT NULL
+);
+
+-- 资源表
+CREATE TABLE IF NOT EXISTS resources (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    url VARCHAR(500)
+);
