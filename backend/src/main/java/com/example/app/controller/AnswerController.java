@@ -78,4 +78,79 @@ public class AnswerController {
         result.put("isLiked", isLiked != null && isLiked);
         return result;
     }
+
+    // 标记最佳答案
+    @PostMapping("/{answerId}/mark-best")
+    public Map<String, Object> markAsBest(@PathVariable("answerId") Long answerId,
+                                          @RequestBody Map<String, Long> request) {
+        Long userId = request.get("userId");
+        try {
+            answerService.markAsBest(answerId, userId);
+            Map<String, Object> result = new HashMap<>();
+            result.put("ok", true);
+            result.put("message", "已标记为最佳答案");
+            return result;
+        } catch (RuntimeException e) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("ok", false);
+            result.put("error", e.getMessage());
+            return result;
+        }
+    }
+
+    // 取消最佳答案标记
+    @PostMapping("/{answerId}/unmark-best")
+    public Map<String, Object> unmarkAsBest(@PathVariable("answerId") Long answerId,
+                                            @RequestBody Map<String, Long> request) {
+        Long userId = request.get("userId");
+        try {
+            answerService.unmarkAsBest(answerId, userId);
+            Map<String, Object> result = new HashMap<>();
+            result.put("ok", true);
+            result.put("message", "已取消最佳答案标记");
+            return result;
+        } catch (RuntimeException e) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("ok", false);
+            result.put("error", e.getMessage());
+            return result;
+        }
+    }
+
+    // 获取问题的最佳答案
+    @GetMapping("/question/{qid}/best")
+    public Map<String, Object> getBestAnswer(@PathVariable("qid") Long questionId) {
+        try {
+            Answer bestAnswer = answerService.getBestAnswer(questionId);
+            Map<String, Object> result = new HashMap<>();
+            result.put("ok", true);
+            result.put("bestAnswer", bestAnswer);
+            return result;
+        } catch (RuntimeException e) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("ok", false);
+            result.put("error", e.getMessage());
+            return result;
+        }
+    }
+
+    // 检查用户是否有权限标记最佳答案
+    @GetMapping("/question/{qid}/can-mark-best/{userId}")
+    public Map<String, Object> canMarkBestAnswer(@PathVariable("qid") Long questionId,
+                                                 @PathVariable("userId") Long userId) {
+        try {
+            boolean canMark = answerService.canMarkBestAnswer(userId, questionId);
+            Map<String, Object> result = new HashMap<>();
+            result.put("ok", true);
+            result.put("canMark", canMark);
+            result.put("questionId", questionId);
+            result.put("userId", userId);
+            return result;
+        } catch (RuntimeException e) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("ok", false);
+            result.put("error", e.getMessage());
+            return result;
+        }
+    }
 }

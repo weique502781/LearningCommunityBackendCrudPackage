@@ -23,4 +23,34 @@
         VALUES (#{questionId}, #{userId}, #{content})
     </insert>
 
+    <update id="updateIsBest">
+        UPDATE answers SET is_best = #{isBest} WHERE id = #{id}
+    </update>
+
+    <update id="clearBestAnswer">
+        UPDATE answers SET is_best = false WHERE question_id = #{questionId}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE answers SET status = #{status} WHERE id = #{id}
+    </update>
+
+    <select id="selectBestAnswer" parameterType="Long" resultMap="AnswerResultMap">
+        SELECT * FROM answers
+        WHERE question_id = #{questionId} AND is_best = true
+        LIMIT 1
+    </select>
+
+    <select id="selectByStatus" parameterType="String" resultMap="AnswerResultMap">
+        SELECT * FROM answers WHERE status = #{status}
+    </select>
+
+    <select id="countAnswers" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM answers
+    </select>
+
+    <select id="countAnswersByStatus" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM answers WHERE status = #{status}
+    </select>
+
 </mapper>

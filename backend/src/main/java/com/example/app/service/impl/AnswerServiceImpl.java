@@ -3,9 +3,11 @@ package com.example.app.service.impl;
 
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import com.example.app.service.AnswerService;
 import com.example.app.mapper.AnswerMapper;
+import com.example.app.mapper.QuestionMapper;
 import com.example.app.model.Answer;
 import java.util.List;
 
@@ -14,6 +16,9 @@ public class AnswerServiceImpl implements AnswerService {
 
     @Autowired
     private AnswerMapper answerMapper;
+
+    @Autowired
+    private QuestionMapper questionMapper;
 
     @Autowired
     private StringRedisTemplate redisTemplate;
@@ -27,6 +32,14 @@ public class AnswerServiceImpl implements AnswerService {
     }
 
     public void create(Answer a) {
+        // 设置默认状态
+        if (a.getStatus() == null || a.getStatus().isEmpty()) {
+            a.setStatus("PENDING");
+        }
+        // 设置默认最佳答案状态
+        if (a.getIsBest() == null) {
+            a.setIsBest(false);
+        }
         answerMapper.insert(a);
     }
 
@@ -39,5 +52,67 @@ public class AnswerServiceImpl implements AnswerService {
         } else {
             throw new RuntimeException("Already liked");
         }
+    }
+
+    @Override
+    @Transactional
+    public void markAsBest(Long answerId, Long questionOwnerId) {
+        // 验证权限：只有问题创建者可以标记最佳答案
+        Answer answer = answerMapper.selectById(answerId);
+        if (answer == null) {
+            throw new RuntimeException("回答不存在");
+        }
+
+        Long questionId = answer.getQuestionId();
+        com.example.app.model.Question question = questionMapper.selectById(questionId);
+        if (question == null) {
+            throw new RuntimeException("问题不存在");
+        }
+
+        // 检查权限
+        if (!question.getUserId().equals(questionOwnerId)) {
+            throw new RuntimeException("只有问题创建者可以标记最佳答案");
+        }
+
+        // 清除该问题现有的最佳答案标记
+        answerMapper.clearBestAnswer(questionId);
+
+        // 设置新的最佳答案
+        answerMapper.updateIsBest(answerId, true);
+    }
+
+    @Override
+    @Transactional
+    public void unmarkAsBest(Long answerId, Long questionOwnerId) {
+        // 验证权限：只有问题创建者可以取消最佳答案标记
+        Answer answer = answerMapper.selectById(answerId);
+        if (answer == null) {
+            throw new RuntimeException("回答不存在");
+        }
+
+        Long questionId = answer.getQuestionId();
+        com.example.app.model.Question question = questionMapper.selectById(questionId);
+        if (question == null) {
+            throw new RuntimeException("问题不存在");
+        }
+
+        // 检查权限
+        if (!question.getUserId().equals(questionOwnerId)) {
+            throw new RuntimeException("只有问题创建者可以取消最佳答案标记");
+        }
+
+        // 取消最佳答案标记
+        answerMapper.updateIsBest(answerId, false);
+    }
+
+    @Override
+    public Answer getBestAnswer(Long questionId) {
+        return answerMapper.selectBestAnswer(questionId);
+    }
+
+    @Override
+    public boolean canMarkBestAnswer(Long userId, Long questionId) {
+        com.example.app.model.Question question = questionMapper.selectById(questionId);
+        return question != null && question.getUserId().equals(userId);
     }
 }

@@ -8,6 +8,7 @@
         <result property="email" column="email" />
         <result property="password" column="password" />
         <result property="nickname" column="nickname" />
+        <result property="role" column="role" />  <!-- 新增role字段 -->
         <result property="createTime" column="create_time" />
     </resultMap>
 
@@ -19,9 +20,39 @@
         SELECT * FROM users WHERE email = #{email}
     </select>
 
+    <!-- 新增：获取所有用户 -->
+    <select id="selectAll" resultMap="UserResultMap">
+        SELECT * FROM users ORDER BY create_time DESC
+    </select>
+
+    <!-- 新增：按角色查询用户 -->
+    <select id="selectByRole" parameterType="String" resultMap="UserResultMap">
+        SELECT * FROM users WHERE role = #{role} ORDER BY create_time DESC
+    </select>
+
+    <!-- 修改：插入语句添加role字段 -->
     <insert id="insert" parameterType="com.example.app.model.User" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO users (email, password, nickname, create_time)
-        VALUES (#{email}, #{password}, #{nickname}, #{createTime})
+        INSERT INTO users (email, password, nickname, role, create_time)
+        VALUES (#{email}, #{password}, #{nickname}, #{role}, #{createTime})
     </insert>
+
+    <!-- 新增：更新用户信息 -->
+    <update id="update" parameterType="com.example.app.model.User">
+        UPDATE users
+        SET email = #{email},
+        nickname = #{nickname},
+        role = #{role}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 更新用户角色 -->
+    <update id="updateRole">
+        UPDATE users SET role = #{role} WHERE id = #{userId}
+    </update>
+
+    <!-- 统计用户数量 -->
+    <select id="countUsers" resultType="int">
+        SELECT COUNT(*) FROM users
+    </select>
 
 </mapper>

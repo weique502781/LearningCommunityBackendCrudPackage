@@ -23,4 +23,24 @@
         VALUES (#{userId}, #{title}, #{url})
     </insert>
 
+    <select id="selectByUserId" parameterType="Long" resultMap="ResourceResultMap">
+        SELECT * FROM resources WHERE user_id = #{userId}
+    </select>
+
+    <select id="selectByStatus" parameterType="String" resultMap="ResourceResultMap">
+        SELECT * FROM resources WHERE status = #{status}
+    </select>
+
+    <update id="updateStatus">
+        UPDATE resources SET status = #{status} WHERE id = #{id}
+    </update>
+
+    <select id="countResources" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM resources
+    </select>
+
+    <select id="countResourcesByStatus" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM resources WHERE status = #{status}
+    </select>
+
 </mapper>

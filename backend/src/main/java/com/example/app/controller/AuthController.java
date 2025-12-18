@@ -22,9 +22,21 @@ public class AuthController {
 
     @PostMapping("/register")
     public Map<String, Object> register(@RequestBody User user) {
+        // 检查是否管理员注册（需要有特殊标识）
+        // 这里简化处理，实际应该更安全
+        if (user.getRole() != null && user.getRole().equals("ADMIN")) {
+            // 管理员注册需要特殊权限或验证码
+            // 这里可以添加额外的验证逻辑
+            Map<String, Object> result = new HashMap<>();
+            result.put("ok", false);
+            result.put("error", "管理员注册需要特殊权限");
+            return result;
+        }
+
         userService.create(user);
         Map<String, Object> result = new HashMap<>();
         result.put("ok", true);
+        result.put("message", "注册成功");
         return result;
     }
 

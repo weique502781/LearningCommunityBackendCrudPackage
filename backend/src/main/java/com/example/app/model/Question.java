@@ -4,11 +4,12 @@ package com.example.app.model;
 import java.time.LocalDateTime;
 
 public class Question {
-    private Long id;
-    private Long userId;
-    private String title;
-    private String content;
-    private LocalDateTime createTime;
+    private Long id;//回答ID
+    private Long userId;//关联用户ID
+    private String title;//问题标题
+    private String content;//问题内容
+    private String status;//问题状态：待定、批准、拒绝
+    private LocalDateTime createTime;//创建时间
 
     public Long getId() {
         return id;
@@ -48,5 +49,13 @@ public class Question {
 
     public void setCreateTime(LocalDateTime createTime) {
         this.createTime = createTime;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

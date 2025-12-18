@@ -3,6 +3,7 @@ package com.example.app.service.impl;
 
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import com.example.app.service.UserService;
 import com.example.app.mapper.UserMapper;
 import com.example.app.model.User;
@@ -22,6 +23,22 @@ public class UserServiceImpl implements UserService {
     }
 
     public void create(User u) {
+        // 设置默认角色
+        if (u.getRole() == null || u.getRole().isEmpty()) {
+            u.setRole("USER");
+        }
         userMapper.insert(u);
+    }
+
+    @Override
+    @Transactional
+    public void updateUserRole(Long userId, String role) {
+        userMapper.updateRole(userId, role);
+    }
+
+    @Override
+    public boolean isAdmin(Long userId) {
+        User user = userMapper.selectById(userId);
+        return user != null && "ADMIN".equals(user.getRole());
     }
 }
