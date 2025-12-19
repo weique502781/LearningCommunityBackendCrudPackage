@@ -6,7 +6,7 @@
 
 3)安装mysql，创建数据库：learning_db
 
-4)根据.\test_data.sql在learning_db中创建表
+4)根据.\test_data.sql在learning_db中创建表、插入数据
 
 5)在IDEA中将项目加载为Maven项目
 
@@ -14,7 +14,7 @@
 
 7)启动后端服务: .\backend\src\main\java\com\example\app\Application
 
-8)待完成功能：管理员功能、标记最佳答案功能、实时通知功能、通过关键字检索问题功能、前端代码
+8)待完成功能：实时通知功能、通过关键字检索问题功能、前端代码
 
 9)postman_collection.json——API测试文件（已经全部测试通过）
 
