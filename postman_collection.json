@@ -1,111 +1,39 @@
 {
   "info": {
-    "name": "Learning Community API - Complete Edition",
-    "description": "学习社区后端API完整集合 - 包含所有新功能",
+    "name": "学习平台API测试",
+    "description": "完整的后端API测试集合，包含用户管理、内容管理、审核系统等功能",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "🔧 环境变量设置",
+      "name": "身份验证",
       "item": [
         {
-          "name": "设置环境变量",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "// 设置基础URL",
-                  "pm.environment.set('base_url', 'http://localhost:8081');",
-                  "",
-                  "// 登录并获取token",
-                  "pm.sendRequest({",
-                  "    url: pm.environment.get('base_url') + '/api/auth/login',",
-                  "    method: 'POST',",
-                  "    header: { 'Content-Type': 'application/json' },",
-                  "    body: {",
-                  "        mode: 'raw',",
-                  "        raw: JSON.stringify({ email: 'admin@example.com', password: 'password123' })",
-                  "    }",
-                  "}, function (err, res) {",
-                  "    if (err) {",
-                  "        console.log(err);",
-                  "    } else {",
-                  "        var data = res.json();",
-                  "        if (data.token) {",
-                  "            pm.environment.set('admin_token', data.token);",
-                  "            pm.environment.set('admin_id', 1);",
-                  "        }",
-                  "    }",
-                  "});",
-                  "",
-                  "// 普通用户登录",
-                  "pm.sendRequest({",
-                  "    url: pm.environment.get('base_url') + '/api/auth/login',",
-                  "    method: 'POST',",
-                  "    header: { 'Content-Type': 'application/json' },",
-                  "    body: {",
-                  "        mode: 'raw',",
-                  "        raw: JSON.stringify({ email: 'alice@example.com', password: 'password123' })",
-                  "    }",
-                  "}, function (err, res) {",
-                  "    if (err) {",
-                  "        console.log(err);",
-                  "    } else {",
-                  "        var data = res.json();",
-                  "        if (data.token) {",
-                  "            pm.environment.set('user_token', data.token);",
-                  "            pm.environment.set('user_id', 3);",
-                  "        }",
-                  "    }",
-                  "});"
-                ]
+          "name": "用户注册",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
               }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"testuser@example.com\",\n  \"password\": \"password123\",\n  \"nickname\": \"测试用户\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/auth/register",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "auth", "register"]
             }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "👤 用户认证",
-      "item": [
-        {
-          "name": "用户注册（普通用户）",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"testuser@example.com\",\n  \"password\": \"test123\",\n  \"nickname\": \"测试用户\",\n  \"role\": \"USER\"\n}"
-            },
-            "url": "{{base_url}}/api/auth/register"
-          }
+          },
+          "response": []
         },
         {
-          "name": "用户注册（管理员-会失败）",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"hacker@example.com\",\n  \"password\": \"hack123\",\n  \"nickname\": \"黑客\",\n  \"role\": \"ADMIN\"\n}"
-            },
-            "url": "{{base_url}}/api/auth/register"
-          }
-        },
-        {
-          "name": "管理员登录",
+          "name": "用户登录",
           "request": {
             "method": "POST",
             "header": [
@@ -118,258 +46,123 @@
               "mode": "raw",
               "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\"\n}"
             },
-            "url": "{{base_url}}/api/auth/login"
-          }
-        },
-        {
-          "name": "普通用户登录",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"alice@example.com\",\n  \"password\": \"password123\"\n}"
-            },
-            "url": "{{base_url}}/api/auth/login"
-          }
+            "url": {
+              "raw": "http://localhost:8081/api/auth/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "auth", "login"]
+            }
+          },
+          "response": []
         }
       ]
     },
     {
-      "name": "👑 管理员功能",
+      "name": "用户管理",
       "item": [
         {
-          "name": "获取所有用户（需要管理员权限）",
+          "name": "获取用户信息",
           "request": {
             "method": "GET",
             "header": [
               {
-                "key": "X-Admin-Id",
-                "value": "{{admin_id}}"
+                "key": "X-User-Id",
+                "value": "1"
               }
             ],
-            "url": "{{base_url}}/api/admin/users"
-          }
-        },
-        {
-          "name": "按角色查询用户",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "X-Admin-Id",
-                "value": "{{admin_id}}"
-              }
-            ],
-            "url": "{{base_url}}/api/admin/users/role/USER"
-          }
-        },
-        {
-          "name": "修改用户角色",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "X-Admin-Id",
-                "value": "{{admin_id}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"role\": \"ADMIN\"\n}"
-            },
-            "url": "{{base_url}}/api/admin/users/4/role"
-          }
-        },
-        {
-          "name": "封禁用户",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "X-Admin-Id",
-                "value": "{{admin_id}}"
-              }
-            ],
-            "url": "{{base_url}}/api/admin/users/8/ban"
-          }
-        },
-        {
-          "name": "解封用户",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "X-Admin-Id",
-                "value": "{{admin_id}}"
-              }
-            ],
-            "url": "{{base_url}}/api/admin/users/8/unban"
-          }
-        },
-        {
-          "name": "获取待审核内容",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "X-Admin-Id",
-                "value": "{{admin_id}}"
-              }
-            ],
-            "url": "{{base_url}}/api/admin/content/pending"
-          }
-        },
-        {
-          "name": "审核通过问题",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "X-Admin-Id",
-                "value": "{{admin_id}}"
-              }
-            ],
-            "url": "{{base_url}}/api/admin/questions/3/approve"
-          }
-        },
-        {
-          "name": "拒绝问题",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "X-Admin-Id",
-                "value": "{{admin_id}}"
-              }
-            ],
-            "url": "{{base_url}}/api/admin/questions/5/reject"
-          }
-        },
-        {
-          "name": "审核通过回答",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "X-Admin-Id",
-                "value": "{{admin_id}}"
-              }
-            ],
-            "url": "{{base_url}}/api/admin/answers/3/approve"
-          }
-        },
-        {
-          "name": "审核通过资源",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "X-Admin-Id",
-                "value": "{{admin_id}}"
-              }
-            ],
-            "url": "{{base_url}}/api/admin/resources/3/approve"
-          }
-        },
-        {
-          "name": "删除问题",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "X-Admin-Id",
-                "value": "{{admin_id}}"
-              }
-            ],
-            "url": "{{base_url}}/api/admin/questions/5"
-          }
-        },
-        {
-          "name": "获取系统统计",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "X-Admin-Id",
-                "value": "{{admin_id}}"
-              }
-            ],
-            "url": "{{base_url}}/api/admin/stats"
-          }
-        },
-        {
-          "name": "获取每日统计",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "X-Admin-Id",
-                "value": "{{admin_id}}"
-              }
-            ],
-            "url": "{{base_url}}/api/admin/stats/daily?days=7"
-          }
+            "url": {
+              "raw": "http://localhost:8081/api/users/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "users", "1"]
+            }
+          },
+          "response": []
         }
       ]
     },
     {
-      "name": "❓ 问题管理",
+      "name": "问题管理",
       "item": [
         {
           "name": "获取所有问题",
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{base_url}}/api/questions"
-          }
+            "url": {
+              "raw": "http://localhost:8081/api/questions",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "questions"]
+            }
+          },
+          "response": []
         },
         {
-          "name": "创建问题（带状态）",
+          "name": "创建新问题",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "3"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"userId\": {{user_id}},\n  \"title\": \"如何优化Java应用性能？\",\n  \"content\": \"有哪些常用的Java性能优化技巧？\",\n  \"status\": \"PENDING\"\n}"
+              "raw": "{\n  \"userId\": 3,\n  \"title\": \"新的测试问题\",\n  \"content\": \"这是一个测试问题内容\"\n}"
             },
-            "url": "{{base_url}}/api/questions"
-          }
+            "url": {
+              "raw": "http://localhost:8081/api/questions",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "questions"]
+            }
+          },
+          "response": []
         },
         {
-          "name": "获取特定问题",
+          "name": "获取单个问题",
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{base_url}}/api/questions/1"
-          }
+            "url": {
+              "raw": "http://localhost:8081/api/questions/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "questions", "1"]
+            }
+          },
+          "response": []
         }
       ]
     },
     {
-      "name": "💬 回答管理",
+      "name": "回答管理",
       "item": [
         {
           "name": "获取问题的回答",
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{base_url}}/api/answers/question/1"
-          }
+            "url": {
+              "raw": "http://localhost:8081/api/answers/question/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "answers", "question", "1"]
+            }
+          },
+          "response": []
         },
         {
           "name": "创建回答",
@@ -383,10 +176,56 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"questionId\": 1,\n  \"userId\": {{user_id}},\n  \"content\": \"使用性能分析工具如JProfiler或VisualVM进行诊断。\",\n  \"status\": \"PENDING\",\n  \"isBest\": false\n}"
+              "raw": "{\n  \"questionId\": 1,\n  \"userId\": 4,\n  \"content\": \"这是一个测试回答\"\n}"
             },
-            "url": "{{base_url}}/api/answers"
-          }
+            "url": {
+              "raw": "http://localhost:8081/api/answers",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "answers"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "点赞回答",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 3\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/answers/1/like",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "answers", "1", "like"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "获取点赞数",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/api/answers/1/like-count",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "answers", "1", "like-count"]
+            }
+          },
+          "response": []
         },
         {
           "name": "标记最佳答案",
@@ -400,94 +239,52 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"userId\": {{user_id}}\n}"
+              "raw": "{\n  \"userId\": 3\n}"
             },
-            "url": "{{base_url}}/api/answers/2/mark-best"
-          }
+            "url": {
+              "raw": "http://localhost:8081/api/answers/1/mark-best",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "answers", "1", "mark-best"]
+            }
+          },
+          "response": []
         },
         {
-          "name": "取消最佳答案标记",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"userId\": {{user_id}}\n}"
-            },
-            "url": "{{base_url}}/api/answers/2/unmark-best"
-          }
-        },
-        {
-          "name": "获取问题的最佳答案",
+          "name": "获取最佳答案",
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{base_url}}/api/answers/question/1/best"
-          }
-        },
-        {
-          "name": "检查是否可以标记最佳答案",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{base_url}}/api/answers/question/1/can-mark-best/{{user_id}}"
-          }
+            "url": {
+              "raw": "http://localhost:8081/api/answers/question/1/best",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "answers", "question", "1", "best"]
+            }
+          },
+          "response": []
         }
       ]
     },
     {
-      "name": "👍 点赞功能",
-      "item": [
-        {
-          "name": "点赞回答",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"userId\": {{user_id}}\n}"
-            },
-            "url": "{{base_url}}/api/answers/1/like"
-          }
-        },
-        {
-          "name": "获取点赞数",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{base_url}}/api/answers/1/like-count"
-          }
-        },
-        {
-          "name": "检查用户是否点赞",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{base_url}}/api/answers/1/liked/{{user_id}}"
-          }
-        }
-      ]
-    },
-    {
-      "name": "📚 资源管理",
+      "name": "资源管理",
       "item": [
         {
           "name": "获取所有资源",
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{base_url}}/api/resources"
-          }
+            "url": {
+              "raw": "http://localhost:8081/api/resources",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "resources"]
+            }
+          },
+          "response": []
         },
         {
           "name": "创建资源",
@@ -501,114 +298,320 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"userId\": {{user_id}},\n  \"title\": \"Java性能优化指南\",\n  \"url\": \"https://docs.oracle.com/javase/8/docs/technotes/guides/vm/performance-enhancements.html\",\n  \"status\": \"PENDING\"\n}"
+              "raw": "{\n  \"userId\": 3,\n  \"title\": \"测试资源\",\n  \"url\": \"https://example.com/test\"\n}"
             },
-            "url": "{{base_url}}/api/resources"
-          }
+            "url": {
+              "raw": "http://localhost:8081/api/resources",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "resources"]
+            }
+          },
+          "response": []
         }
       ]
     },
     {
-      "name": "👥 用户信息",
+      "name": "管理员功能",
       "item": [
         {
-          "name": "获取用户信息",
+          "name": "获取所有用户（管理员）",
           "request": {
             "method": "GET",
-            "header": [],
-            "url": "{{base_url}}/api/users/{{user_id}}"
-          }
-        }
-      ]
-    },
-    {
-      "name": "🧪 边界测试",
-      "item": [
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "1"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8081/api/admin/users",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "admin", "users"]
+            }
+          },
+          "response": []
+        },
         {
-          "name": "无权限访问管理员接口",
+          "name": "按角色获取用户",
           "request": {
             "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "1"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8081/api/admin/users/role/USER",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "admin", "users", "role", "USER"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "更新用户角色",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Admin-Id",
+                "value": "1"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"MODERATOR\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/admin/users/3/role",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "admin", "users", "3", "role"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "封禁用户",
+          "request": {
+            "method": "POST",
             "header": [
               {
                 "key": "X-Admin-Id",
-                "value": "{{user_id}}"
-              }
-            ],
-            "url": "{{base_url}}/api/admin/users"
-          }
-        },
-        {
-          "name": "普通用户尝试标记他人问题的最佳答案",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
+                "value": "1"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"userId\": 4\n}"
+              "raw": ""
             },
-            "url": "{{base_url}}/api/answers/1/mark-best"
-          }
+            "url": {
+              "raw": "http://localhost:8081/api/admin/users/3/ban",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "admin", "users", "3", "ban"]
+            }
+          },
+          "response": []
         },
         {
-          "name": "重复点赞测试",
+          "name": "获取待审核内容",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "1"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8081/api/admin/content/pending",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "admin", "content", "pending"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "审核通过问题",
           "request": {
             "method": "POST",
             "header": [
               {
-                "key": "Content-Type",
-                "value": "application/json"
+                "key": "X-Admin-Id",
+                "value": "1"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"userId\": {{user_id}}\n}"
+              "raw": ""
             },
-            "url": "{{base_url}}/api/answers/1/like"
-          }
+            "url": {
+              "raw": "http://localhost:8081/api/admin/questions/3/approve",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "admin", "questions", "3", "approve"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "审核通过回答",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Admin-Id",
+                "value": "1"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/admin/answers/3/approve",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "admin", "answers", "3", "approve"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "审核通过资源",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Admin-Id",
+                "value": "1"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/admin/resources/3/approve",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "admin", "resources", "3", "approve"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "删除问题",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-Admin-Id",
+                "value": "1"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/admin/questions/5",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "admin", "questions", "5"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "获取系统统计",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "1"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8081/api/admin/stats",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "admin", "stats"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "获取每日统计",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "1"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8081/api/admin/stats/daily?days=7",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "admin", "stats", "daily"],
+              "query": [
+                {
+                  "key": "days",
+                  "value": "7"
+                }
+              ]
+            }
+          },
+          "response": []
         }
       ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": ["console.log('测试开始时间:', new Date().toISOString());"]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.test('状态码为200', function () {",
+          "    pm.response.to.have.status(200);",
+          "});",
+          "",
+          "pm.test('响应时间小于1000ms', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+          "});"
+        ]
+      }
     }
   ],
   "variable": [
     {
-      "key": "base_url",
+      "key": "baseUrl",
       "value": "http://localhost:8081",
       "type": "string"
     },
     {
-      "key": "admin_id",
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminId",
       "value": "1",
-      "type": "string"
-    },
-    {
-      "key": "user_id",
-      "value": "3",
-      "type": "string"
-    },
-    {
-      "key": "admin_token",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "user_token",
-      "value": "",
       "type": "string"
     }
   ],
-  "auth": {
-    "type": "bearer",
-    "bearer": [
-      {
-        "key": "token",
-        "value": "{{admin_token}}",
-        "type": "string"
-      }
-    ]
-  }
+  "auth": null
 }

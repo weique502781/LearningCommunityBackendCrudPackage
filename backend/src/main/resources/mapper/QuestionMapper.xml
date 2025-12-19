@@ -8,6 +8,7 @@
         <result property="userId" column="user_id" />
         <result property="title" column="title" />
         <result property="content" column="content" />
+        <result property="status" column="status" />  <!-- 添加status字段 -->
         <result property="createTime" column="create_time" />
     </resultMap>
 
@@ -19,9 +20,34 @@
         SELECT * FROM questions ORDER BY create_time DESC
     </select>
 
+    <!-- 新增：按用户ID查询 -->
+    <select id="selectByUserId" parameterType="Long" resultMap="QuestionResultMap">
+        SELECT * FROM questions WHERE user_id = #{userId} ORDER BY create_time DESC
+    </select>
+
+    <!-- 新增：按状态查询 -->
+    <select id="selectByStatus" parameterType="String" resultMap="QuestionResultMap">
+        SELECT * FROM questions WHERE status = #{status} ORDER BY create_time DESC
+    </select>
+
     <insert id="insert" parameterType="com.example.app.model.Question" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO questions (user_id, title, content, create_time)
-        VALUES (#{userId}, #{title}, #{content}, #{createTime})
+        INSERT INTO questions (user_id, title, content, status, create_time)
+        VALUES (#{userId}, #{title}, #{content}, #{status}, #{createTime})
     </insert>
+
+    <!-- 新增：更新状态 -->
+    <update id="updateStatus">
+        UPDATE questions SET status = #{status} WHERE id = #{id}
+    </update>
+
+    <!-- 新增：统计问题数量 -->
+    <select id="countQuestions" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM questions
+    </select>
+
+    <!-- 新增：按状态统计问题数量 -->
+    <select id="countQuestionsByStatus" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM questions WHERE status = #{status}
+    </select>
 
 </mapper>

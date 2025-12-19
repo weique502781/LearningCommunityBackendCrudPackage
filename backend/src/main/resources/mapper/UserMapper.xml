@@ -51,7 +51,7 @@
     </update>
 
     <!-- 统计用户数量 -->
-    <select id="countUsers" resultType="int">
+    <select id="countUsers" resultType="java.lang.Long">
         SELECT COUNT(*) FROM users
     </select>
 

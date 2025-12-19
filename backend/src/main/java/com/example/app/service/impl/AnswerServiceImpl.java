@@ -9,6 +9,8 @@ import com.example.app.service.AnswerService;
 import com.example.app.mapper.AnswerMapper;
 import com.example.app.mapper.QuestionMapper;
 import com.example.app.model.Answer;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -39,6 +41,10 @@ public class AnswerServiceImpl implements AnswerService {
         // 设置默认最佳答案状态
         if (a.getIsBest() == null) {
             a.setIsBest(false);
+        }
+        // 设置创建时间
+        if (a.getCreateTime() == null) {
+            a.setCreateTime(LocalDateTime.now());
         }
         answerMapper.insert(a);
     }

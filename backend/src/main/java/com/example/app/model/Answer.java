@@ -1,14 +1,18 @@
 // Answer.java
 package com.example.app.model;
 
+import java.time.LocalDateTime;
+
 public class Answer {
     private Long id;
     private Long questionId;
     private Long userId;
     private String content;
-    private Boolean isBest;//是否为最佳答案
-    private String status;//回答状态：待定、批准、拒绝
+    private Boolean isBest; // 是否为最佳答案
+    private String status;  // 回答状态：待定、批准、拒绝
+    private LocalDateTime createTime; // 创建时间字段
 
+    // getter 和 setter 方法
     public Long getId() {
         return id;
     }
@@ -55,5 +59,13 @@ public class Answer {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public LocalDateTime getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(LocalDateTime createTime) {
+        this.createTime = createTime;
     }
 }

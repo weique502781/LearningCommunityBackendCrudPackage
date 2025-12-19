@@ -8,6 +8,9 @@
         <result property="questionId" column="question_id" />
         <result property="userId" column="user_id" />
         <result property="content" column="content" />
+        <result property="isBest" column="is_best" />
+        <result property="status" column="status" />  <!-- 添加status字段 -->
+        <result property="createTime" column="create_time" />
     </resultMap>
 
     <select id="selectById" parameterType="Long" resultMap="AnswerResultMap">
@@ -15,12 +18,28 @@
     </select>
 
     <select id="selectByQuestionId" parameterType="Long" resultMap="AnswerResultMap">
-        SELECT * FROM answers WHERE question_id = #{qid}
+        SELECT * FROM answers WHERE question_id = #{qid} ORDER BY create_time DESC
+    </select>
+
+    <!-- 新增：按用户ID查询 -->
+    <select id="selectByUserId" parameterType="Long" resultMap="AnswerResultMap">
+        SELECT * FROM answers WHERE user_id = #{userId} ORDER BY create_time DESC
+    </select>
+
+    <!-- 新增：按状态查询 -->
+    <select id="selectByStatus" parameterType="String" resultMap="AnswerResultMap">
+        SELECT * FROM answers WHERE status = #{status} ORDER BY create_time DESC
+    </select>
+
+    <select id="selectBestAnswer" parameterType="Long" resultMap="AnswerResultMap">
+        SELECT * FROM answers
+        WHERE question_id = #{questionId} AND is_best = true
+        LIMIT 1
     </select>
 
     <insert id="insert" parameterType="com.example.app.model.Answer" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO answers (question_id, user_id, content)
-        VALUES (#{questionId}, #{userId}, #{content})
+        INSERT INTO answers (question_id, user_id, content, is_best, status, create_time)
+        VALUES (#{questionId}, #{userId}, #{content}, #{isBest}, #{status}, #{createTime})
     </insert>
 
     <update id="updateIsBest">
@@ -34,16 +53,6 @@
     <update id="updateStatus">
         UPDATE answers SET status = #{status} WHERE id = #{id}
     </update>
-
-    <select id="selectBestAnswer" parameterType="Long" resultMap="AnswerResultMap">
-        SELECT * FROM answers
-        WHERE question_id = #{questionId} AND is_best = true
-        LIMIT 1
-    </select>
-
-    <select id="selectByStatus" parameterType="String" resultMap="AnswerResultMap">
-        SELECT * FROM answers WHERE status = #{status}
-    </select>
 
     <select id="countAnswers" resultType="java.lang.Long">
         SELECT COUNT(*) FROM answers
