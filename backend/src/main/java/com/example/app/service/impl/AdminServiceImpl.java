@@ -14,7 +14,10 @@ import com.example.app.model.User;
 import com.example.app.model.Question;
 import com.example.app.model.Answer;
 import com.example.app.model.Resource;
+import com.example.app.model.Notification;
+import com.example.app.service.NotificationService;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -32,6 +35,9 @@ public class AdminServiceImpl implements AdminService {
 
     @Autowired
     private ResourceMapper resourceMapper;
+
+    @Autowired
+    private NotificationService notificationService;
 
     // 用户管理
     @Override
@@ -84,36 +90,154 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     public void approveQuestion(Long questionId) {
         questionMapper.updateStatus(questionId, "APPROVED");
+        
+        // 发送通知给问题创建者
+        try {
+            Question question = questionMapper.selectById(questionId);
+            if (question != null && question.getUserId() != null) {
+                Notification notification = new Notification();
+                notification.setType("QUESTION_APPROVED");
+                notification.setUserId(question.getUserId());
+                notification.setMessage("您的问题《" + question.getTitle() + "》已通过审核");
+                notification.setTimestamp(LocalDateTime.now());
+                
+                notificationService.sendNotification(notification);
+                notificationService.storeOfflineNotification(question.getUserId().toString(), notification);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     @Transactional
     public void rejectQuestion(Long questionId) {
         questionMapper.updateStatus(questionId, "REJECTED");
+        
+        // 发送通知给问题创建者
+        try {
+            Question question = questionMapper.selectById(questionId);
+            if (question != null && question.getUserId() != null) {
+                Notification notification = new Notification();
+                notification.setType("QUESTION_REJECTED");
+                notification.setUserId(question.getUserId());
+                notification.setMessage("您的问题《" + question.getTitle() + "》未通过审核");
+                notification.setTimestamp(LocalDateTime.now());
+                
+                notificationService.sendNotification(notification);
+                notificationService.storeOfflineNotification(question.getUserId().toString(), notification);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     @Transactional
     public void approveAnswer(Long answerId) {
         answerMapper.updateStatus(answerId, "APPROVED");
+        
+        // 发送通知给回答创建者和问题创建者
+        try {
+            Answer answer = answerMapper.selectById(answerId);
+            if (answer != null) {
+                // 通知回答创建者
+                if (answer.getUserId() != null) {
+                    Notification notification = new Notification();
+                    notification.setType("ANSWER_APPROVED");
+                    notification.setUserId(answer.getUserId());
+                    notification.setMessage("您的回答已通过审核");
+                    notification.setTimestamp(LocalDateTime.now());
+                    
+                    notificationService.sendNotification(notification);
+                    notificationService.storeOfflineNotification(answer.getUserId().toString(), notification);
+                }
+                
+                // 通知问题创建者有新回答
+                Question question = questionMapper.selectById(answer.getQuestionId());
+                if (question != null && question.getUserId() != null && !question.getUserId().equals(answer.getUserId())) {
+                    Notification notification = new Notification();
+                    notification.setType("NEW_ANSWER_APPROVED");
+                    notification.setUserId(question.getUserId());
+                    notification.setMessage("您的问题《" + question.getTitle() + "》收到了新的回答");
+                    notification.setTimestamp(LocalDateTime.now());
+                    
+                    notificationService.sendNotification(notification);
+                    notificationService.storeOfflineNotification(question.getUserId().toString(), notification);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     @Transactional
     public void rejectAnswer(Long answerId) {
         answerMapper.updateStatus(answerId, "REJECTED");
+        
+        // 发送通知给回答创建者
+        try {
+            Answer answer = answerMapper.selectById(answerId);
+            if (answer != null && answer.getUserId() != null) {
+                Notification notification = new Notification();
+                notification.setType("ANSWER_REJECTED");
+                notification.setUserId(answer.getUserId());
+                notification.setMessage("您的回答未通过审核");
+                notification.setTimestamp(LocalDateTime.now());
+                
+                notificationService.sendNotification(notification);
+                notificationService.storeOfflineNotification(answer.getUserId().toString(), notification);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     @Transactional
     public void approveResource(Long resourceId) {
         resourceMapper.updateStatus(resourceId, "APPROVED");
+        
+        // 发送通知给资源创建者
+        try {
+            Resource resource = resourceMapper.selectById(resourceId);
+            if (resource != null && resource.getUserId() != null) {
+                Notification notification = new Notification();
+                notification.setType("RESOURCE_APPROVED");
+                notification.setUserId(resource.getUserId());
+                notification.setMessage("您的资源《" + resource.getTitle() + "》已通过审核");
+                notification.setTimestamp(LocalDateTime.now());
+                
+                notificationService.sendNotification(notification);
+                notificationService.storeOfflineNotification(resource.getUserId().toString(), notification);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     @Transactional
     public void rejectResource(Long resourceId) {
         resourceMapper.updateStatus(resourceId, "REJECTED");
+        
+        // 发送通知给资源创建者
+        try {
+            Resource resource = resourceMapper.selectById(resourceId);
+            if (resource != null && resource.getUserId() != null) {
+                Notification notification = new Notification();
+                notification.setType("RESOURCE_REJECTED");
+                notification.setUserId(resource.getUserId());
+                notification.setMessage("您的资源《" + resource.getTitle() + "》未通过审核");
+                notification.setTimestamp(LocalDateTime.now());
+                
+                notificationService.sendNotification(notification);
+                notificationService.storeOfflineNotification(resource.getUserId().toString(), notification);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

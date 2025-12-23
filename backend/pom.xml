@@ -118,6 +118,18 @@
             <version>0.9.1</version>  <!-- JWT处理库 -->
         </dependency>
 
+        <!-- JAXB API for JDK 9+ compatibility -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+
         <!--
             Spring Boot Test Starter - 测试支持 (测试范围)
             包含：JUnit, Spring Test, AssertJ, Mockito等
@@ -139,6 +151,15 @@
             <scope>provided</scope>
         </dependency>
         -->
+
+        <!--
+            Spring Boot WebSocket Starter - WebSocket支持
+            用于：实时消息推送、在线聊天等功能
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
     </dependencies>
 
     <!-- =========================================================== -->

@@ -3,6 +3,7 @@ package com.example.app.controller;
 
 import com.example.app.model.Answer;
 import com.example.app.service.AnswerService;
+import com.example.app.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -19,11 +20,19 @@ public class AnswerController {
     private AnswerService answerService;
 
     @Autowired
+    private UserService userService;
+
+    @Autowired
     private StringRedisTemplate redisTemplate;
 
     @GetMapping("/question/{qid}")
-    public List<Answer> listByQuestion(@PathVariable("qid") Long qid) {
-        return answerService.listByQuestion(qid);
+    public List<Answer> listByQuestion(@PathVariable("qid") Long qid,
+                                       @RequestHeader(value = "X-User-Id", required = false) Long userId) {
+        boolean isAdmin = false;
+        if (userId != null) {
+            isAdmin = userService.isAdmin(userId);
+        }
+        return answerService.listVisibleByQuestion(qid, userId, isAdmin);
     }
 
     @PostMapping

@@ -14,21 +14,36 @@
     </resultMap>
 
     <select id="selectById" parameterType="Long" resultMap="AnswerResultMap">
-        SELECT * FROM answers WHERE id = #{id}
+        SELECT * FROM answers WHERE id = #{id} AND status != 'DELETED'
     </select>
 
     <select id="selectByQuestionId" parameterType="Long" resultMap="AnswerResultMap">
-        SELECT * FROM answers WHERE question_id = #{qid} ORDER BY create_time DESC
+        SELECT * FROM answers WHERE question_id = #{qid} AND status != 'DELETED' ORDER BY create_time DESC
+    </select>
+
+    <!-- 新增：带权限过滤的查询 -->
+    <select id="selectVisibleByQuestionId" resultMap="AnswerResultMap">
+        SELECT * FROM answers
+        WHERE question_id = #{questionId} AND status != 'DELETED'
+        <if test="!isAdmin">
+            AND (
+                status = 'APPROVED'
+                <if test="userId != null">
+                    OR user_id = #{userId}
+                </if>
+            )
+        </if>
+        ORDER BY create_time DESC
     </select>
 
     <!-- 新增：按用户ID查询 -->
     <select id="selectByUserId" parameterType="Long" resultMap="AnswerResultMap">
-        SELECT * FROM answers WHERE user_id = #{userId} ORDER BY create_time DESC
+        SELECT * FROM answers WHERE user_id = #{userId} AND status != 'DELETED' ORDER BY create_time DESC
     </select>
 
     <!-- 新增：按状态查询 -->
     <select id="selectByStatus" parameterType="String" resultMap="AnswerResultMap">
-        SELECT * FROM answers WHERE status = #{status} ORDER BY create_time DESC
+        SELECT * FROM answers WHERE status = #{status} AND status != 'DELETED' ORDER BY create_time DESC
     </select>
 
     <select id="selectBestAnswer" parameterType="Long" resultMap="AnswerResultMap">

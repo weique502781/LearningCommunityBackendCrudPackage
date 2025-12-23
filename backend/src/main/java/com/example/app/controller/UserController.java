@@ -17,4 +17,9 @@ public class UserController {
     public User get(@PathVariable Long id) {
         return userService.getById(id);
     }
+
+    @GetMapping("/email/{email}")
+    public User getByEmail(@PathVariable String email) {
+        return userService.getByEmail(email);
+    }
 }

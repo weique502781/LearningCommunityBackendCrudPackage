@@ -1,3 +1,7 @@
+-- 编码声明：必须在文件开头，任何语句之前
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+SET collation_connection = 'utf8mb4_unicode_ci';
 -- test_data_final.sql
 -- 1. 创建数据库（若不存在）
 CREATE DATABASE IF NOT EXISTS learning_db DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -83,7 +87,20 @@ INSERT INTO questions (user_id, title, content, status, create_time) VALUES
 (5, 'Vue和React哪个更适合新手？', '作为前端新手，应该选择Vue还是React？', 'PENDING', DATE_SUB(NOW(), INTERVAL 2 DAY)),
 (6, 'Redis在Spring Boot中如何集成？', '想在Spring Boot项目中使用Redis缓存，如何配置？', 'APPROVED', DATE_SUB(NOW(), INTERVAL 1 DAY)),
 (7, 'MyBatis和JPA哪个更好？', '在Spring Boot项目中，应该选择MyBatis还是JPA？', 'REJECTED', DATE_SUB(NOW(), INTERVAL 4 DAY)),
-(3, '如何设计RESTful API？', '设计良好的RESTful API应该遵循哪些原则？', 'APPROVED', NOW());
+(3, '如何设计RESTful API？', '设计良好的RESTful API应该遵循哪些原则？', 'APPROVED', NOW()),
+(3, 'Java基础语法有哪些？', '请问Java的基本语法包括哪些内容？', 'APPROVED', DATE_SUB(NOW(), INTERVAL 8 DAY)),
+(4, 'Java和Python的区别', 'Java和Python在语法和应用场景上有什么不同？', 'APPROVED', DATE_SUB(NOW(), INTERVAL 7 DAY)),
+(5, '测试用例怎么写？', '软件测试过程中，如何编写高质量的测试用例？', 'APPROVED', DATE_SUB(NOW(), INTERVAL 6 DAY)),
+(6, '单元测试工具推荐', 'Java项目常用的单元测试工具有哪些？', 'APPROVED', DATE_SUB(NOW(), INTERVAL 5 DAY)),
+(7, 'Java Web开发入门', '新手如何快速上手Java Web开发？', 'APPROVED', DATE_SUB(NOW(), INTERVAL 4 DAY)),
+(3, '接口测试和功能测试区别', '接口测试和功能测试有什么不同？', 'APPROVED', DATE_SUB(NOW(), INTERVAL 3 DAY)),
+(4, '如何进行压力测试', 'Java项目如何做压力测试？', 'APPROVED', DATE_SUB(NOW(), INTERVAL 2 DAY)),
+(5, '测试数据如何准备', '测试过程中，如何高效准备测试数据？', 'APPROVED', DATE_SUB(NOW(), INTERVAL 1 DAY)),
+(6, 'Java项目部署流程', '请介绍Java项目的标准部署流程。', 'APPROVED', NOW()),
+(7, 'Java多线程编程', 'Java多线程有哪些常见问题？', 'APPROVED', NOW()),
+(3, '测试报告模板推荐', '有没有好用的测试报告模板？', 'APPROVED', NOW()),
+(4, 'Java异常处理机制', 'Java的异常处理机制是怎样的？', 'APPROVED', NOW()),
+(5, '测试环境搭建', '如何快速搭建测试环境？', 'APPROVED', NOW());
 
 -- 插入回答数据
 INSERT INTO answers (question_id, user_id, content, is_best, status, create_time) VALUES
@@ -113,3 +130,7 @@ UNION ALL
 SELECT 'Answers:', COUNT(*) FROM answers
 UNION ALL
 SELECT 'Resources:', COUNT(*) FROM resources;
+
+-- 134-136 lines removed
+-- 然后重新创建
+ALTER TABLE questions ADD FULLTEXT INDEX ft_title_content (title, content);

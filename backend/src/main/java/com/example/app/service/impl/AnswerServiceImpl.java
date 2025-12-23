@@ -9,6 +9,8 @@ import com.example.app.service.AnswerService;
 import com.example.app.mapper.AnswerMapper;
 import com.example.app.mapper.QuestionMapper;
 import com.example.app.model.Answer;
+import com.example.app.service.NotificationService;
+import com.example.app.model.Notification;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,12 +27,19 @@ public class AnswerServiceImpl implements AnswerService {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
+    @Autowired
+    private NotificationService notificationService;
+
     public Answer getById(Long id) {
         return answerMapper.selectById(id);
     }
 
     public List<Answer> listByQuestion(Long qid) {
         return answerMapper.selectByQuestionId(qid);
+    }
+
+    public List<Answer> listVisibleByQuestion(Long questionId, Long userId, boolean isAdmin) {
+        return answerMapper.selectVisibleByQuestionId(questionId, userId, isAdmin);
     }
 
     public void create(Answer a) {
@@ -47,6 +56,25 @@ public class AnswerServiceImpl implements AnswerService {
             a.setCreateTime(LocalDateTime.now());
         }
         answerMapper.insert(a);
+        
+        // 发送通知：当有新回答时，通知问题创建者
+        try {
+            com.example.app.model.Question question = questionMapper.selectById(a.getQuestionId());
+            if (question != null && question.getUserId() != null) {
+                Notification notification = new Notification();
+                notification.setType("NEW_ANSWER");
+                notification.setUserId(question.getUserId()); // 通知问题创建者
+                notification.setMessage("您的问题《" + question.getTitle() + "》收到了新的回答");
+                notification.setTimestamp(LocalDateTime.now());
+                
+                // 尝试实时推送，如果用户离线则存储
+                notificationService.sendNotification(notification);
+                notificationService.storeOfflineNotification(question.getUserId().toString(), notification);
+            }
+        } catch (Exception e) {
+            // 通知发送失败不影响回答创建
+            e.printStackTrace();
+        }
     }
 
     public void like(Long answerId, Long userId) {
@@ -55,6 +83,26 @@ public class AnswerServiceImpl implements AnswerService {
 
         if (added != null && added == 1L) {
             redisTemplate.opsForValue().increment("answer:like:count:" + answerId);
+            
+            // 发送通知：当回答被点赞时，通知回答创建者
+            try {
+                Answer answer = answerMapper.selectById(answerId);
+                if (answer != null && answer.getUserId() != null && !answer.getUserId().equals(userId)) {
+                    // 不通知自己给自己点赞
+                    Notification notification = new Notification();
+                    notification.setType("ANSWER_LIKED");
+                    notification.setUserId(answer.getUserId()); // 通知回答创建者
+                    notification.setMessage("您的回答收到了新的点赞");
+                    notification.setTimestamp(LocalDateTime.now());
+                    
+                    // 尝试实时推送，如果用户离线则存储
+                    notificationService.sendNotification(notification);
+                    notificationService.storeOfflineNotification(answer.getUserId().toString(), notification);
+                }
+            } catch (Exception e) {
+                // 通知发送失败不影响点赞操作
+                e.printStackTrace();
+            }
         } else {
             throw new RuntimeException("Already liked");
         }
@@ -85,6 +133,24 @@ public class AnswerServiceImpl implements AnswerService {
 
         // 设置新的最佳答案
         answerMapper.updateIsBest(answerId, true);
+
+        // 发送通知：当回答被标记为最佳答案时，通知回答创建者
+        try {
+            if (answer.getUserId() != null) {
+        Notification notification = new Notification();
+        notification.setType("BEST_ANSWER");
+                notification.setUserId(answer.getUserId()); // 通知回答创建者
+                notification.setMessage("您的回答被标记为最佳答案");
+        notification.setTimestamp(LocalDateTime.now());
+                
+                // 尝试实时推送，如果用户离线则存储
+                notificationService.sendNotification(notification);
+                notificationService.storeOfflineNotification(answer.getUserId().toString(), notification);
+            }
+        } catch (Exception e) {
+            // 通知发送失败不影响最佳答案标记操作
+            e.printStackTrace();
+        }
     }
 
     @Override

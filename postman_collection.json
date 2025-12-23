@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "学习平台API测试",
-    "description": "完整的后端API测试集合，包含用户管理、内容管理、审核系统等功能",
+    "description": "完整的后端API测试集合，包含用户管理、内容管理、审核系统、实时通知、搜索等功能。注意：WebSocket实时通信功能无法直接用Postman测试，需要使用WebSocket客户端工具（如Postman的WebSocket功能、浏览器控制台或专门的WebSocket测试工具）。",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -566,6 +566,327 @@
                 }
               ]
             }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "通知功能",
+      "item": [
+        {
+          "name": "获取所有通知",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/notifications",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["notifications"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "发送通知（测试用）",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 3,\n  \"type\": \"TEST_NOTIFICATION\",\n  \"message\": \"这是一条测试通知\",\n  \"timestamp\": \"2024-01-01T10:00:00\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/notifications",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["notifications"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "获取用户离线通知",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/notifications/offline/3",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["notifications", "offline", "3"]
+            },
+            "description": "获取用户ID为3的离线通知。\n\n⚠️ 重要提示：\n1. 如果返回空数组[]，说明当前没有离线通知\n2. 需要先触发通知事件（创建回答、点赞、标记最佳答案等）\n3. 此接口会清空该用户的离线通知队列（获取后再次调用会返回空数组）\n\n测试步骤：\n1. 先执行\"测试事件驱动通知-创建回答触发通知\"\n2. 然后执行此接口获取离线通知\n3. 应该能看到通知数据"
+          },
+          "response": []
+        },
+        {
+          "name": "测试事件驱动通知-创建回答触发通知",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"questionId\": 1,\n  \"userId\": 4,\n  \"content\": \"这是一个测试回答，会触发通知给问题创建者\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/answers",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "answers"]
+            },
+            "description": "创建回答后，会自动通知问题创建者。测试步骤：1. 先创建一个问题（userId=3）2. 用另一个用户（userId=4）回答该问题 3. 查询userId=3的离线通知，应该能看到新回答的通知。"
+          },
+          "response": []
+        },
+        {
+          "name": "测试事件驱动通知-点赞触发通知",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 3\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/answers/1/like",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "answers", "1", "like"]
+            },
+            "description": "点赞回答后，会自动通知回答创建者。测试步骤：1. 确保回答ID为1的回答存在，且创建者不是userId=3 2. 用userId=3点赞该回答 3. 查询回答创建者的离线通知，应该能看到点赞通知。"
+          },
+          "response": []
+        },
+        {
+          "name": "测试事件驱动通知-标记最佳答案触发通知",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 3\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/answers/1/mark-best",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "answers", "1", "mark-best"]
+            },
+            "description": "标记最佳答案后，会自动通知回答创建者。测试步骤：1. 确保回答ID为1的回答存在，且问题创建者是userId=3 2. 用userId=3标记该回答为最佳答案 3. 查询回答创建者的离线通知，应该能看到最佳答案通知。"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "搜索功能",
+      "item": [
+        {
+          "name": "基本搜索（默认排序）",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/search?keyword=Java&page=1&size=10",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["search"],
+              "query": [
+                {
+                  "key": "keyword",
+                  "value": "Java",
+                  "description": "搜索关键词"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "页码，从1开始"
+                },
+                {
+                  "key": "size",
+                  "value": "10",
+                  "description": "每页大小"
+                }
+              ]
+            },
+            "description": "搜索包含'Java'关键词的问题，默认按创建时间降序排序。"
+          },
+          "response": []
+        },
+        {
+          "name": "搜索（按创建时间降序）",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/search?keyword=Java&page=1&size=10&orderBy=create_time&orderDirection=DESC",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["search"],
+              "query": [
+                {
+                  "key": "keyword",
+                  "value": "Java"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "orderBy",
+                  "value": "create_time",
+                  "description": "排序字段：create_time, title, id"
+                },
+                {
+                  "key": "orderDirection",
+                  "value": "DESC",
+                  "description": "排序方向：ASC, DESC"
+                }
+              ]
+            },
+            "description": "搜索并按创建时间降序排序（最新的在前）。"
+          },
+          "response": []
+        },
+        {
+          "name": "搜索（按创建时间升序）",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/search?keyword=Java&page=1&size=10&orderBy=create_time&orderDirection=ASC",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["search"],
+              "query": [
+                {
+                  "key": "keyword",
+                  "value": "Java"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "orderBy",
+                  "value": "create_time"
+                },
+                {
+                  "key": "orderDirection",
+                  "value": "ASC"
+                }
+              ]
+            },
+            "description": "搜索并按创建时间升序排序（最旧的在前）。"
+          },
+          "response": []
+        },
+        {
+          "name": "搜索（按标题排序）",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/search?keyword=Java&page=1&size=10&orderBy=title&orderDirection=ASC",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["search"],
+              "query": [
+                {
+                  "key": "keyword",
+                  "value": "Java"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "orderBy",
+                  "value": "title"
+                },
+                {
+                  "key": "orderDirection",
+                  "value": "ASC"
+                }
+              ]
+            },
+            "description": "搜索并按标题字母顺序排序。"
+          },
+          "response": []
+        },
+        {
+          "name": "搜索（分页测试）",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/search?keyword=测试&page=2&size=5",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["search"],
+              "query": [
+                {
+                  "key": "keyword",
+                  "value": "测试"
+                },
+                {
+                  "key": "page",
+                  "value": "2",
+                  "description": "第2页"
+                },
+                {
+                  "key": "size",
+                  "value": "5",
+                  "description": "每页5条"
+                }
+              ]
+            },
+            "description": "测试分页功能，获取第2页，每页5条记录。"
           },
           "response": []
         }

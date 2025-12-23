@@ -9,5 +9,9 @@ public interface QuestionService {
 
     List<Question> listAll();
 
+    List<Question> listVisible(Long userId, boolean isAdmin); // 获取可见的问题列表
+
+    Question getVisibleById(Long id, Long userId, boolean isAdmin); // 获取可见的单个问题
+
     void create(Question q);
 }

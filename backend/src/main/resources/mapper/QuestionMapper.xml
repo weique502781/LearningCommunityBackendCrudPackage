@@ -13,16 +13,32 @@
     </resultMap>
 
     <select id="selectById" parameterType="Long" resultMap="QuestionResultMap">
-        SELECT * FROM questions WHERE id = #{id}
+        SELECT * FROM questions WHERE id = #{id} AND status != 'DELETED'
     </select>
 
     <select id="selectAll" resultMap="QuestionResultMap">
-        SELECT * FROM questions ORDER BY create_time DESC
+        SELECT * FROM questions WHERE status != 'DELETED' ORDER BY create_time DESC
     </select>
 
     <!-- 新增：按用户ID查询 -->
     <select id="selectByUserId" parameterType="Long" resultMap="QuestionResultMap">
-        SELECT * FROM questions WHERE user_id = #{userId} ORDER BY create_time DESC
+        SELECT * FROM questions WHERE user_id = #{userId} AND status != 'DELETED' ORDER BY create_time DESC
+    </select>
+
+    <!-- 新增：带权限过滤的查询 -->
+    <select id="selectVisible" resultMap="QuestionResultMap">
+        SELECT * FROM questions
+        <where>
+            status != 'DELETED'
+            <if test="!isAdmin">
+                AND (status = 'APPROVED'
+                <if test="userId != null">
+                    OR user_id = #{userId}
+                </if>
+                )
+            </if>
+        </where>
+        ORDER BY create_time DESC
     </select>
 
     <!-- 新增：按状态查询 -->

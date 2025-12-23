@@ -43,8 +43,10 @@ public class AuthController {
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody Map<String, String> body) {
         String email = body.get("email");
+        String password = body.get("password");
         User u = userService.getByEmail(email);
-        if (u == null) {
+        
+        if (u == null || !u.getPassword().equals(password)) {
             Map<String, Object> result = new HashMap<>();
             result.put("error", "invalid credentials");
             return result;

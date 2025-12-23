@@ -2,11 +2,13 @@
 package com.example.app.mapper;
 
 import com.example.app.model.Answer;
+import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface AnswerMapper {
     Answer selectById(Long id);//根据ID获取回答
     List<Answer> selectByQuestionId(Long qid);//根据问题ID获取回答列表
+    List<Answer> selectVisibleByQuestionId(@Param("questionId") Long questionId, @Param("userId") Long userId, @Param("isAdmin") boolean isAdmin); // 带权限过滤的查询
     List<Answer> selectByUserId(Long userId);  // 按用户ID查询
     List<Answer> selectByStatus(String status);  // 按状态查询
     Answer selectBestAnswer(Long questionId);  // 获取问题的最佳答案
