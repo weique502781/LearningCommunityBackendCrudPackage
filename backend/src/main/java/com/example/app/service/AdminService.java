@@ -1,4 +1,4 @@
-// AdminService.java
+// AdminService.java-用于定义管理员相关操作的接口
 package com.example.app.service;
 
 import com.example.app.model.AdminStats;

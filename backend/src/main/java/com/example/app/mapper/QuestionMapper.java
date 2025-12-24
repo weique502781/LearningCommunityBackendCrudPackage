@@ -1,10 +1,13 @@
-// QuestionMapper.java
 package com.example.app.mapper;
 
 import com.example.app.model.Question;
 import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
+/*
+    QuestionMapper.java
+    处理与问题相关的数据库操作
+*/
 public interface QuestionMapper {
     Question selectById(Long id);//根据ID获取问题
     List<Question> selectAll();//获取所有问题

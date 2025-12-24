@@ -1,4 +1,4 @@
-// AnswerServiceImpl.java
+// AnswerServiceImpl.java-用于处理与回答相关的业务逻辑实现
 package com.example.app.service.impl;
 
 import org.springframework.stereotype.Service;
@@ -21,28 +21,31 @@ import java.util.List;
 public class AnswerServiceImpl implements AnswerService {
 
     @Autowired
-    private AnswerMapper answerMapper;
+    private AnswerMapper answerMapper;//数据访问对象
 
     @Autowired
-    private QuestionMapper questionMapper;
+    private QuestionMapper questionMapper;//数据访问对象
 
     @Autowired
-    private UserService userService;
+    private UserService userService;//用户服务
 
     @Autowired
-    private StringRedisTemplate redisTemplate;
+    private StringRedisTemplate redisTemplate;// Redis操作模板
 
     @Autowired
-    private NotificationService notificationService;
+    private NotificationService notificationService;//通知服务
 
+    // 根据ID获取回答
     public Answer getById(Long id) {
         return answerMapper.selectById(id);
     }
 
+    // 列出问题的所有回答
     public List<Answer> listByQuestion(Long qid) {
         return answerMapper.selectByQuestionId(qid);
     }
 
+    // 列出问题的所有可见回答，基于用户权限过滤
     public List<Answer> listVisibleByQuestion(Long questionId, Long userId, boolean isAdmin) {
         List<Answer> answers = answerMapper.selectVisibleByQuestionId(questionId, userId, isAdmin);
         if (answers == null) {
@@ -67,6 +70,7 @@ public class AnswerServiceImpl implements AnswerService {
         return filtered;
     }
 
+    // 创建新回答
     public void create(Answer a) {
         // 设置默认状态
         if (a.getStatus() == null || a.getStatus().isEmpty()) {
@@ -104,6 +108,7 @@ public class AnswerServiceImpl implements AnswerService {
         }
     }
 
+    // 点赞回答
     public void like(Long answerId, Long userId) {
         String key = "answer:like:set:" + answerId;
         Long added = redisTemplate.opsForSet().add(key, userId.toString());
@@ -137,6 +142,7 @@ public class AnswerServiceImpl implements AnswerService {
         }
     }
 
+    // 标记最佳答案
     @Override
     @Transactional
     public void markAsBest(Long answerId, Long questionOwnerId) {
@@ -185,6 +191,7 @@ public class AnswerServiceImpl implements AnswerService {
         }
     }
 
+    // 取消最佳答案标记
     @Override
     @Transactional
     public void unmarkAsBest(Long answerId, Long questionOwnerId) {
@@ -210,11 +217,13 @@ public class AnswerServiceImpl implements AnswerService {
         answerMapper.updateIsBest(answerId, false);
     }
 
+    // 获取问题的最佳答案
     @Override
     public Answer getBestAnswer(Long questionId) {
         return answerMapper.selectBestAnswer(questionId);
     }
 
+    // 检查用户是否有权限标记最佳答案
     @Override
     public boolean canMarkBestAnswer(Long userId, Long questionId) {
         com.example.app.model.Question question = questionMapper.selectById(questionId);

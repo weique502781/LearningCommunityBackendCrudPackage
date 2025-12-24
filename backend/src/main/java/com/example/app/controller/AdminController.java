@@ -1,4 +1,3 @@
-// AdminController.java
 package com.example.app.controller;
 
 import com.example.app.model.*;
@@ -17,10 +16,10 @@ import java.util.Map;
 public class AdminController {
 
     @Autowired
-    private AdminService adminService;
+    private AdminService adminService;//处理管理员相关操作
 
     @Autowired
-    private UserService userService;
+    private UserService userService;//用户权限验证
 
     // 权限检查中间件（这里简化处理，实际应该使用Spring Security或拦截器）
     private void checkAdminPermission(Long userId) {
@@ -42,6 +41,7 @@ public class AdminController {
         return ResponseEntity.ok(result);
     }
 
+    // 根据角色获取用户
     @GetMapping("/users/role/{role}")
     public ResponseEntity<Map<String, Object>> getUsersByRole(
             @PathVariable String role,
@@ -55,6 +55,7 @@ public class AdminController {
         return ResponseEntity.ok(result);
     }
 
+    // 更新用户角色
     @PutMapping("/users/{userId}/role")
     public ResponseEntity<Map<String, Object>> updateUserRole(
             @PathVariable Long userId,
@@ -71,6 +72,7 @@ public class AdminController {
         return ResponseEntity.ok(result);
     }
 
+    // 用户封禁与解封
     @PostMapping("/users/{userId}/ban")
     public ResponseEntity<Map<String, Object>> banUser(
             @PathVariable Long userId,
@@ -127,6 +129,7 @@ public class AdminController {
         return ResponseEntity.ok(result);
     }
 
+    //拒绝问题
     @PostMapping("/questions/{questionId}/reject")
     public ResponseEntity<Map<String, Object>> rejectQuestion(
             @PathVariable Long questionId,
@@ -156,6 +159,7 @@ public class AdminController {
         return ResponseEntity.ok(result);
     }
 
+    //拒绝回答
     @PostMapping("/answers/{answerId}/reject")
     public ResponseEntity<Map<String, Object>> rejectAnswer(
             @PathVariable Long answerId,
@@ -185,6 +189,7 @@ public class AdminController {
         return ResponseEntity.ok(result);
     }
 
+    //拒绝资源
     @PostMapping("/resources/{resourceId}/reject")
     public ResponseEntity<Map<String, Object>> rejectResource(
             @PathVariable Long resourceId,
@@ -214,6 +219,7 @@ public class AdminController {
         return ResponseEntity.ok(result);
     }
 
+    // 删除回答
     @DeleteMapping("/answers/{answerId}")
     public ResponseEntity<Map<String, Object>> deleteAnswer(
             @PathVariable Long answerId,
@@ -228,6 +234,7 @@ public class AdminController {
         return ResponseEntity.ok(result);
     }
 
+    // 删除资源
     @DeleteMapping("/resources/{resourceId}")
     public ResponseEntity<Map<String, Object>> deleteResource(
             @PathVariable Long resourceId,
@@ -255,6 +262,7 @@ public class AdminController {
         return ResponseEntity.ok(result);
     }
 
+    // 获取最近几天的日活跃用户统计
     @GetMapping("/stats/daily")
     public ResponseEntity<Map<String, Object>> getDailyStats(
             @RequestParam(defaultValue = "7") int days,

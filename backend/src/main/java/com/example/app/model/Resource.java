@@ -1,13 +1,13 @@
-// Resource.java
+// Resource.java--模型类，表示资源实体
 package com.example.app.model;
 
 import java.time.LocalDateTime;
 
 public class Resource {
-    private Long id;
-    private Long userId;
-    private String title;
-    private String url;
+    private Long id;// 资源ID
+    private Long userId;// 提交资源的用户ID
+    private String title;// 资源标题
+    private String url;// 资源链接
     private String status; // 资源状态：待定、批准、拒绝
     private LocalDateTime createTime; // 创建时间字段
 

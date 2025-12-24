@@ -4,7 +4,20 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f0b373c3-5745-42f0-ae3d-71f44ba10802" name="更改" comment="后端搜索功能完善，前端代码添加" />
+    <list default="true" id="f0b373c3-5745-42f0-ae3d-71f44ba10802" name="更改" comment="后端搜索功能完善，前端代码添加">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/app/config/RedisConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/app/config/RedisConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/app/controller/AdminController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/app/controller/AdminController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/app/controller/AnswerController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/app/controller/AnswerController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/app/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/app/controller/AuthController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/app/controller/NotificationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/app/controller/NotificationController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/app/controller/QuestionController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/app/controller/QuestionController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/app/controller/ResourceController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/app/controller/ResourceController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/app/controller/SearchController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/app/controller/SearchController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/app/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/app/controller/UserController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo_script.txt" beforeDir="false" afterPath="$PROJECT_DIR$/demo_script.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/娴嬭瘯璇存槑.md" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -85,7 +98,15 @@
       <option name="project" value="LOCAL" />
       <updated>1766555521323</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="后端搜索功能完善，前端代码添加">
+      <option name="closed" value="true" />
+      <created>1766556022002</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1766556022002</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">

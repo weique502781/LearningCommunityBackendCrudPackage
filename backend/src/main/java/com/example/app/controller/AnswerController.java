@@ -1,4 +1,3 @@
-// AnswerController.java
 package com.example.app.controller;
 
 import com.example.app.model.Answer;
@@ -17,14 +16,15 @@ import java.util.Map;
 public class AnswerController {
 
     @Autowired
-    private AnswerService answerService;
+    private AnswerService answerService;//处理答案相关操作
 
     @Autowired
-    private UserService userService;
+    private UserService userService;//用户权限验证
 
     @Autowired
-    private StringRedisTemplate redisTemplate;
+    private StringRedisTemplate redisTemplate;// Redis操作模板
 
+    // 获取问题的所有可见答案
     @GetMapping("/question/{qid}")
     public List<Answer> listByQuestion(@PathVariable("qid") Long qid,
                                        @RequestHeader(value = "X-User-Id", required = false) Long userId) {
@@ -35,6 +35,7 @@ public class AnswerController {
         return answerService.listVisibleByQuestion(qid, userId, isAdmin);
     }
 
+    // 创建新答案
     @PostMapping
     public Map<String, Object> create(@RequestBody Answer a) {
         answerService.create(a);

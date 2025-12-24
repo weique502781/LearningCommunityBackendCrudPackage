@@ -1,4 +1,4 @@
-// User.java
+// User.java--用户实体类
 package com.example.app.model;
 
 import java.time.LocalDateTime;

@@ -1,10 +1,13 @@
-// AnswerMapper.java
 package com.example.app.mapper;
 
 import com.example.app.model.Answer;
 import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
+/*
+    AnswerMapper.java
+    处理与回答相关的数据库操作
+*/
 public interface AnswerMapper {
     Answer selectById(Long id);//根据ID获取回答
     List<Answer> selectByQuestionId(Long qid);//根据问题ID获取回答列表

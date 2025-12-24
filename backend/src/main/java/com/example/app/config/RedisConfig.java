@@ -24,8 +24,8 @@ public class RedisConfig {
 
     /**
      * 配置RedisTemplate用于操作Notification对象
-     * @param connectionFactory Redis连接工厂
-     * @return RedisTemplate实例
+     * connectionFactory Redis连接工厂
+     * RedisTemplate实例
      */
     @Bean
     public RedisTemplate<String, Notification> notificationRedisTemplate(

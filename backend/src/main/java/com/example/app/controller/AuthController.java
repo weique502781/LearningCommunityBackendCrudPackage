@@ -1,4 +1,3 @@
-// AuthController.java
 package com.example.app.controller;
 
 import com.example.app.security.JwtUtil;
@@ -15,11 +14,12 @@ import java.util.Map;
 public class AuthController {
 
     @Autowired
-    private UserService userService;
+    private UserService userService;//处理用户相关操作
 
     @Autowired
-    private JwtUtil jwtUtil;
+    private JwtUtil jwtUtil;// JWT工具类
 
+    // 用户注册
     @PostMapping("/register")
     public Map<String, Object> register(@RequestBody User user) {
         // 检查是否管理员注册（需要有特殊标识）
@@ -33,6 +33,7 @@ public class AuthController {
             return result;
         }
 
+        // 普通用户注册
         userService.create(user);
         Map<String, Object> result = new HashMap<>();
         result.put("ok", true);
@@ -40,6 +41,7 @@ public class AuthController {
         return result;
     }
 
+    //登录
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody Map<String, String> body) {
         String email = body.get("email");
@@ -52,6 +54,7 @@ public class AuthController {
             return result;
         }
 
+        // 生成JWT令牌
         String token = jwtUtil.generateToken(u.getId(), u.getNickname());
         Map<String, Object> result = new HashMap<>();
         result.put("token", token);

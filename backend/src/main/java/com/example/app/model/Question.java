@@ -1,4 +1,4 @@
-// Question.java
+// Question.java--实体类，表示问题数据结构
 package com.example.app.model;
 
 import java.time.LocalDateTime;

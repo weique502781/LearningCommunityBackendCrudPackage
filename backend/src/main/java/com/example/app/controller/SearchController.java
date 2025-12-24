@@ -9,15 +9,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/*
+    SearchController.java
+    处理搜索相关的HTTP请求
+*/
 @RestController
 @RequestMapping("/search")
 public class SearchController {
 
     @Autowired
-    private SearchService searchService;
+    private SearchService searchService;//处理搜索相关操作
 
     @Autowired
-    private UserService userService;
+    private UserService userService;//用户权限验证
 
     /**
      * 搜索问题接口

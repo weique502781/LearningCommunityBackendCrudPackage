@@ -1,4 +1,4 @@
-// AdminServiceImpl.java
+// AdminServiceImpl.java--用于实现管理员服务，包括用户管理、内容审核和统计分析功能。
 package com.example.app.service.impl;
 
 import org.springframework.stereotype.Service;
@@ -25,19 +25,19 @@ import java.util.*;
 public class AdminServiceImpl implements AdminService {
 
     @Autowired
-    private UserMapper userMapper;
+    private UserMapper userMapper;//用户数据访问对象
 
     @Autowired
-    private QuestionMapper questionMapper;
+    private QuestionMapper questionMapper;//问题数据访问对象
 
     @Autowired
-    private AnswerMapper answerMapper;
+    private AnswerMapper answerMapper;//回答数据访问对象
 
     @Autowired
-    private ResourceMapper resourceMapper;
+    private ResourceMapper resourceMapper;//资源数据访问对象
 
     @Autowired
-    private NotificationService notificationService;
+    private NotificationService notificationService;//通知服务
 
     // 用户管理
     @Override
@@ -45,17 +45,20 @@ public class AdminServiceImpl implements AdminService {
         return userMapper.selectAll();
     }
 
+    // 根据角色获取用户
     @Override
     public List<User> getUsersByRole(String role) {
         return userMapper.selectByRole(role);
     }
 
+    // 更新用户角色
     @Override
     @Transactional
     public void updateUserRole(Long userId, String role) {
         userMapper.updateRole(userId, role);
     }
 
+    // 封禁用户
     @Override
     @Transactional
     public void banUser(Long userId) {
@@ -64,6 +67,7 @@ public class AdminServiceImpl implements AdminService {
         userMapper.updateRole(userId, "BANNED");
     }
 
+    // 解封用户
     @Override
     @Transactional
     public void unbanUser(Long userId) {
@@ -86,6 +90,7 @@ public class AdminServiceImpl implements AdminService {
         return resourceMapper.selectByStatus("PENDING");
     }
 
+    // 审核通过/拒绝
     @Override
     @Transactional
     public void approveQuestion(Long questionId) {

@@ -1,10 +1,13 @@
-// UserMapper.java
 package com.example.app.mapper;
 
 import com.example.app.model.User;
 
 import java.util.List;
 
+/*
+    UserMapper.java
+    处理与用户相关的数据库操作
+*/
 public interface UserMapper {
     User selectById(Long id);//根据ID获取用户
     User selectByEmail(String email);//根据邮箱获取用户

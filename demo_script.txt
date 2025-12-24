@@ -18,7 +18,7 @@
 
 9)postman_collection.json——API测试文件（已经全部测试通过）
 
-10)前端: npm install && npm run dev（该条指令由AI生成，暂无前端代码，没有测试）
+10)前端: npm install && npm run dev
 
 演示流程 (时长约 4-6 分钟):
 A. 首页: 打开问题列表，展示已有问题

@@ -1,4 +1,4 @@
-// QuestionServiceImpl.java
+// QuestionServiceImpl.java-用于处理与问题相关的业务逻辑实现
 package com.example.app.service.impl;
 
 import org.springframework.stereotype.Service;
@@ -13,20 +13,22 @@ import java.util.List;
 public class QuestionServiceImpl implements QuestionService {
 
     @Autowired
-    private QuestionMapper questionMapper;
+    private QuestionMapper questionMapper;//处理与问题相关的数据库操作
 
     public Question getById(Long id) {
         return questionMapper.selectById(id);
-    }
+    }//根据ID获取问题
 
     public List<Question> listAll() {
         return questionMapper.selectAll();
-    }
+    }//获取所有问题
 
+    // 获取对用户可见的问题列表
     public List<Question> listVisible(Long userId, boolean isAdmin) {
         return questionMapper.selectVisible(userId, isAdmin);
     }
 
+    // 根据ID获取对用户可见的问题
     public Question getVisibleById(Long id, Long userId, boolean isAdmin) {
         Question q = questionMapper.selectById(id);
         if (q == null) return null;
@@ -44,6 +46,7 @@ public class QuestionServiceImpl implements QuestionService {
         return null;
     }
 
+    // 创建新问题，设置默认状态和创建时间
     public void create(Question q) {
         if (q.getStatus() == null || q.getStatus().isEmpty()) {
             q.setStatus("PENDING");

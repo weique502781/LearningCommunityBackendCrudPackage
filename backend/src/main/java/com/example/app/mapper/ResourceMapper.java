@@ -1,9 +1,12 @@
-// ResourceMapper.java
 package com.example.app.mapper;
 
 import com.example.app.model.Resource;
 import java.util.List;
 
+/*
+    ResourceMapper.java
+    处理与资源相关的数据库操作
+*/
 public interface ResourceMapper {
     Resource selectById(Long id);//根据ID获取资源
     List<Resource> selectAll();//获取所有资源

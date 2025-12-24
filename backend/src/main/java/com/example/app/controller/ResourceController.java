@@ -1,4 +1,3 @@
-// ResourceController.java
 package com.example.app.controller;
 
 import com.example.app.model.Resource;
@@ -10,18 +9,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/*
+    ResourceController.java
+    处理资源相关的HTTP请求
+*/
 @RestController
 @RequestMapping("/api/resources")
 public class ResourceController {
 
     @Autowired
-    private ResourceService resourceService;
+    private ResourceService resourceService;//处理资源相关操作
 
+    // 获取所有资源
     @GetMapping
     public List<Resource> list() {
         return resourceService.listAll();
     }
 
+    // 创建新资源
     @PostMapping
     public Map<String, Object> create(@RequestBody Resource r) {
         resourceService.create(r);

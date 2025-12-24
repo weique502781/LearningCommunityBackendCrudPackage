@@ -1,3 +1,4 @@
+//SearchService.java-用于处理搜索相关的业务逻辑
 package com.example.app.service;
 
 import com.example.app.mapper.SearchMapper;
@@ -10,7 +11,7 @@ import java.util.List;
 public class SearchService {
 
     @Autowired
-    private SearchMapper searchMapper;
+    private SearchMapper searchMapper;//数据访问对象
 
     /**
      * 搜索问题

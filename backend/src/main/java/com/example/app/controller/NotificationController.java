@@ -8,6 +8,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/*
+    NotificationController.java
+    处理通知相关的HTTP请求
+*/
 @RestController
 @RequestMapping("/notifications")
 public class NotificationController {

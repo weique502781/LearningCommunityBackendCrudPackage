@@ -1,4 +1,4 @@
-// Answer.java
+// Answer.java--处理与回答相关的数据模型
 package com.example.app.model;
 
 import java.time.LocalDateTime;
