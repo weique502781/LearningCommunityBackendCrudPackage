@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 public class Notification {
     private Long id;
     private Long userId;  // 关联的用户ID，用于指定通知接收者
+    private Long questionId;
+    private Long answerId;
+    private Long resourceId;
     private String type;
     private String message;
     private LocalDateTime timestamp;
@@ -24,6 +27,30 @@ public class Notification {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public Long getQuestionId() {
+        return questionId;
+    }
+
+    public void setQuestionId(Long questionId) {
+        this.questionId = questionId;
+    }
+
+    public Long getAnswerId() {
+        return answerId;
+    }
+
+    public void setAnswerId(Long answerId) {
+        this.answerId = answerId;
+    }
+
+    public Long getResourceId() {
+        return resourceId;
+    }
+
+    public void setResourceId(Long resourceId) {
+        this.resourceId = resourceId;
     }
 
     public String getType() {

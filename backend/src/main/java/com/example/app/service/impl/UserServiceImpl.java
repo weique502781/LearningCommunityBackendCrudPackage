@@ -39,6 +39,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean isAdmin(Long userId) {
         User user = userMapper.selectById(userId);
-        return user != null && "ADMIN".equals(user.getRole());
+        if (user == null || user.getRole() == null) {
+            return false;
+        }
+        String role = user.getRole().trim().toUpperCase();
+        return "ADMIN".equals(role) || "SYSTEM_ADMIN".equals(role) || "SUPER_ADMIN".equals(role);
     }
 }

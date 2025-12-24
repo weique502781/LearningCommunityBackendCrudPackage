@@ -2,10 +2,13 @@ package com.example.app.config;
 
 import com.example.app.model.Notification;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.stereotype.Component;
+
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -23,8 +26,13 @@ public class NotificationWebSocketHandler extends TextWebSocketHandler implement
 
     // 存储用户ID到WebSocket会话的映射
     private final ConcurrentMap<String, WebSocketSession> userSessions = new ConcurrentHashMap<>();
-    
-    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    @Qualifier("notificationJsonRedisSerializer")
+    private Jackson2JsonRedisSerializer<Notification> notificationJsonRedisSerializer;
 
     /**
      * 处理WebSocket连接建立
@@ -98,8 +106,7 @@ public class NotificationWebSocketHandler extends TextWebSocketHandler implement
     public void onMessage(Message message, byte[] pattern) {
         try {
             // 反序列化Redis消息为Notification对象
-            GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer();
-            Notification notification = (Notification) serializer.deserialize(message.getBody());
+            Notification notification = notificationJsonRedisSerializer.deserialize(message.getBody());
             
             if (notification != null && notification.getUserId() != null) {
                 String userId = notification.getUserId().toString();

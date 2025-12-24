@@ -11,8 +11,10 @@ import com.example.app.mapper.QuestionMapper;
 import com.example.app.model.Answer;
 import com.example.app.service.NotificationService;
 import com.example.app.model.Notification;
+import com.example.app.service.UserService;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,6 +25,9 @@ public class AnswerServiceImpl implements AnswerService {
 
     @Autowired
     private QuestionMapper questionMapper;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private StringRedisTemplate redisTemplate;
@@ -39,7 +44,27 @@ public class AnswerServiceImpl implements AnswerService {
     }
 
     public List<Answer> listVisibleByQuestion(Long questionId, Long userId, boolean isAdmin) {
-        return answerMapper.selectVisibleByQuestionId(questionId, userId, isAdmin);
+        List<Answer> answers = answerMapper.selectVisibleByQuestionId(questionId, userId, isAdmin);
+        if (answers == null) {
+            return null;
+        }
+
+        if (isAdmin) {
+            return answers;
+        }
+
+        List<Answer> filtered = new ArrayList<>();
+        for (Answer a : answers) {
+            if (a == null) continue;
+            if ("APPROVED".equals(a.getStatus())) {
+                filtered.add(a);
+                continue;
+            }
+            if (userId != null && a.getUserId() != null && userId.equals(a.getUserId())) {
+                filtered.add(a);
+            }
+        }
+        return filtered;
     }
 
     public void create(Answer a) {
@@ -64,6 +89,8 @@ public class AnswerServiceImpl implements AnswerService {
                 Notification notification = new Notification();
                 notification.setType("NEW_ANSWER");
                 notification.setUserId(question.getUserId()); // 通知问题创建者
+                notification.setQuestionId(a.getQuestionId());
+                notification.setAnswerId(a.getId());
                 notification.setMessage("您的问题《" + question.getTitle() + "》收到了新的回答");
                 notification.setTimestamp(LocalDateTime.now());
                 
@@ -92,6 +119,8 @@ public class AnswerServiceImpl implements AnswerService {
                     Notification notification = new Notification();
                     notification.setType("ANSWER_LIKED");
                     notification.setUserId(answer.getUserId()); // 通知回答创建者
+                    notification.setAnswerId(answerId);
+                    notification.setQuestionId(answer.getQuestionId());
                     notification.setMessage("您的回答收到了新的点赞");
                     notification.setTimestamp(LocalDateTime.now());
                     
@@ -124,8 +153,9 @@ public class AnswerServiceImpl implements AnswerService {
         }
 
         // 检查权限
-        if (!question.getUserId().equals(questionOwnerId)) {
-            throw new RuntimeException("只有问题创建者可以标记最佳答案");
+        boolean isAdmin = questionOwnerId != null && userService.isAdmin(questionOwnerId);
+        if (!isAdmin && !question.getUserId().equals(questionOwnerId)) {
+            throw new RuntimeException("只有问题创建者或管理员可以标记最佳答案");
         }
 
         // 清除该问题现有的最佳答案标记
@@ -140,6 +170,8 @@ public class AnswerServiceImpl implements AnswerService {
         Notification notification = new Notification();
         notification.setType("BEST_ANSWER");
                 notification.setUserId(answer.getUserId()); // 通知回答创建者
+                notification.setAnswerId(answerId);
+                notification.setQuestionId(answer.getQuestionId());
                 notification.setMessage("您的回答被标记为最佳答案");
         notification.setTimestamp(LocalDateTime.now());
                 
@@ -169,8 +201,9 @@ public class AnswerServiceImpl implements AnswerService {
         }
 
         // 检查权限
-        if (!question.getUserId().equals(questionOwnerId)) {
-            throw new RuntimeException("只有问题创建者可以取消最佳答案标记");
+        boolean isAdmin = questionOwnerId != null && userService.isAdmin(questionOwnerId);
+        if (!isAdmin && !question.getUserId().equals(questionOwnerId)) {
+            throw new RuntimeException("只有问题创建者或管理员可以取消最佳答案标记");
         }
 
         // 取消最佳答案标记
@@ -185,6 +218,9 @@ public class AnswerServiceImpl implements AnswerService {
     @Override
     public boolean canMarkBestAnswer(Long userId, Long questionId) {
         com.example.app.model.Question question = questionMapper.selectById(questionId);
-        return question != null && question.getUserId().equals(userId);
+        if (question == null || userId == null) {
+            return false;
+        }
+        return question.getUserId().equals(userId) || userService.isAdmin(userId);
     }
 }

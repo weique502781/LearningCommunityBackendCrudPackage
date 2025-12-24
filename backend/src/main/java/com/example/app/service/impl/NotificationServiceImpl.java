@@ -3,6 +3,7 @@ package com.example.app.service.impl;
 import com.example.app.model.Notification;
 import com.example.app.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import java.util.List;
 public class NotificationServiceImpl implements NotificationService {
 
     @Autowired
+    @Qualifier("notificationRedisTemplate")
     private RedisTemplate<String, Notification> redisTemplate;
 
     @Autowired

@@ -98,6 +98,7 @@ public class AdminServiceImpl implements AdminService {
                 Notification notification = new Notification();
                 notification.setType("QUESTION_APPROVED");
                 notification.setUserId(question.getUserId());
+                notification.setQuestionId(questionId);
                 notification.setMessage("您的问题《" + question.getTitle() + "》已通过审核");
                 notification.setTimestamp(LocalDateTime.now());
                 
@@ -121,6 +122,7 @@ public class AdminServiceImpl implements AdminService {
                 Notification notification = new Notification();
                 notification.setType("QUESTION_REJECTED");
                 notification.setUserId(question.getUserId());
+                notification.setQuestionId(questionId);
                 notification.setMessage("您的问题《" + question.getTitle() + "》未通过审核");
                 notification.setTimestamp(LocalDateTime.now());
                 
@@ -146,6 +148,8 @@ public class AdminServiceImpl implements AdminService {
                     Notification notification = new Notification();
                     notification.setType("ANSWER_APPROVED");
                     notification.setUserId(answer.getUserId());
+                    notification.setAnswerId(answerId);
+                    notification.setQuestionId(answer.getQuestionId());
                     notification.setMessage("您的回答已通过审核");
                     notification.setTimestamp(LocalDateTime.now());
                     
@@ -159,6 +163,8 @@ public class AdminServiceImpl implements AdminService {
                     Notification notification = new Notification();
                     notification.setType("NEW_ANSWER_APPROVED");
                     notification.setUserId(question.getUserId());
+                    notification.setAnswerId(answerId);
+                    notification.setQuestionId(answer.getQuestionId());
                     notification.setMessage("您的问题《" + question.getTitle() + "》收到了新的回答");
                     notification.setTimestamp(LocalDateTime.now());
                     
@@ -183,6 +189,8 @@ public class AdminServiceImpl implements AdminService {
                 Notification notification = new Notification();
                 notification.setType("ANSWER_REJECTED");
                 notification.setUserId(answer.getUserId());
+                notification.setAnswerId(answerId);
+                notification.setQuestionId(answer.getQuestionId());
                 notification.setMessage("您的回答未通过审核");
                 notification.setTimestamp(LocalDateTime.now());
                 
@@ -206,6 +214,7 @@ public class AdminServiceImpl implements AdminService {
                 Notification notification = new Notification();
                 notification.setType("RESOURCE_APPROVED");
                 notification.setUserId(resource.getUserId());
+                notification.setResourceId(resourceId);
                 notification.setMessage("您的资源《" + resource.getTitle() + "》已通过审核");
                 notification.setTimestamp(LocalDateTime.now());
                 
@@ -229,6 +238,7 @@ public class AdminServiceImpl implements AdminService {
                 Notification notification = new Notification();
                 notification.setType("RESOURCE_REJECTED");
                 notification.setUserId(resource.getUserId());
+                notification.setResourceId(resourceId);
                 notification.setMessage("您的资源《" + resource.getTitle() + "》未通过审核");
                 notification.setTimestamp(LocalDateTime.now());
                 

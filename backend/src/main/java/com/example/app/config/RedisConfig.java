@@ -1,11 +1,12 @@
 package com.example.app.config;
 
 import com.example.app.model.Notification;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 /**
@@ -14,13 +15,22 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfig {
 
+    @Bean
+    public Jackson2JsonRedisSerializer<Notification> notificationJsonRedisSerializer(ObjectMapper objectMapper) {
+        Jackson2JsonRedisSerializer<Notification> serializer = new Jackson2JsonRedisSerializer<>(Notification.class);
+        serializer.setObjectMapper(objectMapper);
+        return serializer;
+    }
+
     /**
      * 配置RedisTemplate用于操作Notification对象
      * @param connectionFactory Redis连接工厂
      * @return RedisTemplate实例
      */
     @Bean
-    public RedisTemplate<String, Notification> notificationRedisTemplate(RedisConnectionFactory connectionFactory) {
+    public RedisTemplate<String, Notification> notificationRedisTemplate(
+            RedisConnectionFactory connectionFactory,
+            Jackson2JsonRedisSerializer<Notification> notificationJsonRedisSerializer) {
         RedisTemplate<String, Notification> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
         
@@ -29,11 +39,11 @@ public class RedisConfig {
         template.setHashKeySerializer(new StringRedisSerializer());
         
         // 设置value序列化器
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
-        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+        template.setValueSerializer(notificationJsonRedisSerializer);
+        template.setHashValueSerializer(notificationJsonRedisSerializer);
         
         // 设置默认序列化器
-        template.setDefaultSerializer(new GenericJackson2JsonRedisSerializer());
+        template.setDefaultSerializer(notificationJsonRedisSerializer);
         
         template.afterPropertiesSet();
         return template;

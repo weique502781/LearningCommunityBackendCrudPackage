@@ -89,7 +89,7 @@
 </head>
 <body class="antialiased min-h-screen flex flex-col">
     <!-- Navbar -->
-    <nav class="bg-white/80 backdrop-blur-md border-b border-stone-200 sticky top-0 z-30">
+    <nav class="bg-white/80 backdrop-blur-md border-b border-stone-200 sticky top-0 z-50">
         <div class="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <i data-lucide="book-open" class="w-6 h-6 text-stone-800"></i>
@@ -101,6 +101,20 @@
                     <div class="flex items-center gap-2 text-sm font-medium text-stone-600">
                         <i data-lucide="user" class="w-4 h-4"></i>
                         <span id="userName">User</span>
+                    </div>
+                    <div class="relative flex items-center">
+                        <button id="notificationBtn" onclick="toggleNotificationDropdown(event)" class="relative w-9 h-9 flex items-center justify-center text-stone-400 hover:text-stone-700 transition-colors">
+                            <i data-lucide="bell" class="w-5 h-5"></i>
+                            <span id="unreadBadge" class="hidden absolute top-0 right-0 translate-x-1/3 -translate-y-1/3 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center">0</span>
+                        </button>
+                        <div id="notificationDropdown" class="hidden absolute right-0 top-full mt-2 w-80 bg-white rounded-2xl shadow-xl border border-stone-100 overflow-hidden z-50">
+                            <div class="px-4 py-3 border-b border-stone-100 flex items-center justify-between">
+                                <span class="text-sm font-semibold text-stone-800">Notifications</span>
+                                <button onclick="markAllNotificationsRead()" class="text-xs font-medium text-stone-400 hover:text-stone-700">Mark all read</button>
+                            </div>
+                            <div id="notificationList" class="max-h-80 overflow-auto"></div>
+                            <div id="notificationEmpty" class="px-4 py-6 text-sm text-stone-400 font-light">No notifications</div>
+                        </div>
                     </div>
                     <div class="flex items-center gap-2 text-xs">
                         <span id="wsStatusDot" class="w-2 h-2 rounded-full bg-stone-300"></span>
@@ -344,16 +358,84 @@
 
     <script>
         // --- Initialization & Icons ---
-        lucide.createIcons();
+        function safeCreateIcons() {
+            try {
+                if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                    window.lucide.createIcons();
+                }
+            } catch (e) {
+                // ignore
+            }
+        }
+
+        async function handleMarkBest(answerId, questionId) {
+            if (!currentUser) {
+                showNotification('Please login first', 'INFO');
+                return;
+            }
+            try {
+                const res = await fetch(`${API_BASE}/api/answers/${answerId}/mark-best`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: currentUser.id })
+                });
+                const data = await res.json();
+                if (!data || !data.ok) {
+                    showNotification((data && data.error) || 'Mark top answer failed', 'INFO');
+                    return;
+                }
+                showNotification('Marked as Top Answer', 'INFO');
+                await loadAnswers(questionId);
+            } catch (e) {
+                showNotification('Mark top answer failed', 'INFO');
+            }
+        }
+
+        async function handleUnmarkBest(answerId, questionId) {
+            if (!currentUser) {
+                showNotification('Please login first', 'INFO');
+                return;
+            }
+            try {
+                const res = await fetch(`${API_BASE}/api/answers/${answerId}/unmark-best`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: currentUser.id })
+                });
+                const data = await res.json();
+                if (!data || !data.ok) {
+                    showNotification((data && data.error) || 'Unmark top answer failed', 'INFO');
+                    return;
+                }
+                showNotification('Unmarked Top Answer', 'INFO');
+                await loadAnswers(questionId);
+            } catch (e) {
+                showNotification('Unmark top answer failed', 'INFO');
+            }
+        }
+
+        safeCreateIcons();
         const API_BASE = 'http://localhost:8081';
         let currentUser = null;
         let ws = null;
         let currentQuestionId = null;
+        let highlightAnswerId = null;
+        let notificationItems = [];
+        let unreadCount = 0;
 
         document.addEventListener('DOMContentLoaded', () => {
             loadQuestions();
             checkAuth();
-            lucide.createIcons();
+            safeCreateIcons();
+
+            document.addEventListener('click', (e) => {
+                const dropdown = document.getElementById('notificationDropdown');
+                const btn = document.getElementById('notificationBtn');
+                if (!dropdown || dropdown.classList.contains('hidden')) return;
+                if (btn && (btn === e.target || btn.contains(e.target))) return;
+                if (dropdown === e.target || dropdown.contains(e.target)) return;
+                dropdown.classList.add('hidden');
+            });
             
             // Search Input Listener
             const searchInput = document.getElementById('searchInput');
@@ -365,7 +447,13 @@
         });
 
         function refreshIcons() {
-            setTimeout(() => lucide.createIcons(), 0);
+            setTimeout(() => safeCreateIcons(), 0);
+        }
+
+        function isCurrentUserAdmin() {
+            if (!currentUser || !currentUser.role) return false;
+            const role = String(currentUser.role).trim().toUpperCase();
+            return role === 'ADMIN' || role === 'SYSTEM_ADMIN' || role === 'SUPER_ADMIN';
         }
 
         // --- Auth & WebSocket ---
@@ -375,6 +463,8 @@
                 currentUser = JSON.parse(userData);
                 updateUIForLoggedIn();
                 connectWebSocket();
+                fetchOfflineNotifications();
+                loadQuestions();
             }
         }
 
@@ -384,7 +474,7 @@
             document.getElementById('userInfo').classList.add('flex');
             document.getElementById('userName').textContent = currentUser.nickname || 'User';
             
-            if (currentUser.role === 'ADMIN') {
+            if (isCurrentUserAdmin()) {
                 document.getElementById('tab-admin').classList.remove('hidden');
             }
         }
@@ -410,6 +500,7 @@
                     const data = JSON.parse(event.data);
                     if (data.type !== 'CONNECTED') {
                         showNotification(data.message, data.type);
+                        addNotificationItem(data, true);
                     }
                 } catch (e) {
                     if (event.data !== 'PONG') showNotification(event.data);
@@ -436,12 +527,20 @@
             currentUser = null;
             localStorage.removeItem('user');
             if (ws) ws.close();
+
+            notificationItems = [];
+            unreadCount = 0;
+            renderNotificationList();
+            updateUnreadBadge();
             
             document.getElementById('authButtons').classList.remove('hidden');
             document.getElementById('userInfo').classList.add('hidden');
             document.getElementById('tab-admin').classList.add('hidden');
             
             switchTab('questions');
+            closeAllModals();
+            currentQuestionId = null;
+            loadQuestions();
             showNotification('Successfully logged out');
         }
 
@@ -476,12 +575,119 @@
             `;
             
             container.appendChild(toast);
-            lucide.createIcons();
+            safeCreateIcons();
             
             setTimeout(() => {
                 toast.classList.add('fade-out');
                 setTimeout(() => toast.remove(), 300);
             }, 5000);
+        }
+
+        function toggleNotificationDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('notificationDropdown');
+            if (!dropdown) return;
+
+            const isHidden = dropdown.classList.contains('hidden');
+            if (isHidden) {
+                dropdown.classList.remove('hidden');
+                unreadCount = 0;
+                updateUnreadBadge();
+            } else {
+                dropdown.classList.add('hidden');
+            }
+        }
+
+        function markAllNotificationsRead() {
+            unreadCount = 0;
+            updateUnreadBadge();
+        }
+
+        function addNotificationItem(notification, markUnread) {
+            const item = {
+                type: notification.type || 'INFO',
+                message: notification.message || '',
+                timestamp: normalizeTimestamp(notification.timestamp),
+                questionId: notification.questionId ?? null,
+                answerId: notification.answerId ?? null,
+                resourceId: notification.resourceId ?? null
+            };
+            notificationItems.unshift(item);
+            if (notificationItems.length > 50) notificationItems.pop();
+            if (markUnread) unreadCount += 1;
+            renderNotificationList();
+            updateUnreadBadge();
+        }
+
+        function updateUnreadBadge() {
+            const badge = document.getElementById('unreadBadge');
+            if (!badge) return;
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount > 99 ? '99+' : unreadCount.toString();
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function renderNotificationList() {
+            const list = document.getElementById('notificationList');
+            const empty = document.getElementById('notificationEmpty');
+            if (!list || !empty) return;
+
+            if (!notificationItems || notificationItems.length === 0) {
+                list.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+
+            empty.classList.add('hidden');
+            list.innerHTML = notificationItems.map((n, idx) => {
+                const ts = n.timestamp ? formatDate(n.timestamp) : '';
+                return `
+                    <button onclick="handleNotificationClick(${idx})" class="w-full text-left px-4 py-3 border-b border-stone-100 hover:bg-stone-50">
+                        <div class="text-sm text-stone-800 font-medium">${escapeHtml(n.message)}</div>
+                        <div class="mt-1 text-[11px] text-stone-400 uppercase tracking-wide">${escapeHtml(n.type)}${ts ? ' · ' + ts : ''}</div>
+                    </button>
+                `;
+            }).join('');
+            refreshIcons();
+        }
+
+        async function handleNotificationClick(index) {
+            const n = notificationItems && notificationItems[index];
+            if (!n) return;
+
+            const dropdown = document.getElementById('notificationDropdown');
+            if (dropdown) dropdown.classList.add('hidden');
+
+            if (n.answerId != null) {
+                highlightAnswerId = n.answerId;
+            } else {
+                highlightAnswerId = null;
+            }
+
+            if (n.questionId != null) {
+                await showQuestionDetail(n.questionId);
+                return;
+            }
+
+            showNotification('Unable to open this notification', 'INFO');
+        }
+
+        async function fetchOfflineNotifications() {
+            if (!currentUser) return;
+            try {
+                const res = await fetch(`${API_BASE}/notifications/offline/${currentUser.id}`);
+                if (!res.ok) return;
+                const data = await res.json();
+                if (!data || data.length === 0) return;
+
+                data.forEach(n => addNotificationItem(n, true));
+                showNotification(`You have ${data.length} new notifications`, 'INFO');
+            } catch (e) {
+                console.error('Offline notification fetch failed', e);
+            }
         }
 
         // --- Data Loading ---
@@ -576,7 +782,7 @@
                 document.getElementById('answerQuestionId').value = id;
 
                 const adminActions = document.getElementById('detailAdminActions');
-                if (currentUser && currentUser.role === 'ADMIN') {
+                if (currentUser && isCurrentUserAdmin()) {
                     adminActions.classList.remove('hidden');
                 } else {
                     adminActions.classList.add('hidden');
@@ -592,37 +798,150 @@
 
         async function loadAnswers(questionId) {
             try {
+                let canMarkBest = false;
+                if (currentUser && currentUser.id) {
+                    try {
+                        const canRes = await fetch(`${API_BASE}/api/answers/question/${questionId}/can-mark-best/${currentUser.id}`);
+                        const canData = await canRes.json();
+                        canMarkBest = !!(canData && canData.ok && canData.canMark);
+                    } catch (e) {
+                        canMarkBest = false;
+                    }
+                }
+
                 const headers = {};
                 if (currentUser && currentUser.id) {
                     headers['X-User-Id'] = currentUser.id.toString();
                 }
                 const response = await fetch(`${API_BASE}/api/answers/question/${questionId}`, { headers });
                 const answers = await response.json();
+
+                const filteredAnswers = filterVisibleAnswers(answers);
+                const answersWithMeta = await Promise.all((filteredAnswers || []).map(async (a) => {
+                    const meta = await fetchAnswerLikeMeta(a.id);
+                    return { ...a, likeCount: meta.likeCount, isLiked: meta.isLiked };
+                }));
                 
                 const container = document.getElementById('answerList');
-                if (!answers || answers.length === 0) {
+                if (!answersWithMeta || answersWithMeta.length === 0) {
                     container.innerHTML = '<div class="text-stone-400 text-sm font-light italic">No responses yet.</div>';
                     return;
                 }
                 
-                container.innerHTML = answers.map(a => `
-                    <div class="relative bg-stone-50 rounded-2xl p-6 ${a.isBest ? 'ring-1 ring-emerald-500 bg-emerald-50/30' : ''}">
+                container.innerHTML = answersWithMeta.map(a => `
+                    <div id="answer-${a.id}" class="relative bg-stone-50 rounded-2xl p-6 ${a.isBest ? 'ring-1 ring-emerald-500 bg-emerald-50/30' : ''}">
                         ${a.isBest ? '<div class="absolute -top-3 left-6 bg-emerald-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i> Top Answer</div>' : ''}
                         <p class="text-stone-700 leading-relaxed font-light">${escapeHtml(a.content)}</p>
                         <div class="mt-4 flex items-center justify-between">
-                            <span class="text-xs text-stone-400">${formatDate(a.createTime)}</span>
+                            <div class="flex items-center gap-4">
+                                <span class="text-xs text-stone-400">${formatDate(a.createTime)}</span>
+                                <button id="likeBtn-${a.id}" onclick="handleLikeAnswer(${a.id})" ${a.isLiked ? 'disabled' : ''} class="flex items-center gap-1 text-xs font-medium ${a.isLiked ? 'text-red-600 cursor-default' : 'text-stone-400 hover:text-stone-700'} transition-colors">
+                                    <i data-lucide="heart" class="w-4 h-4"></i>
+                                    <span id="likeCount-${a.id}">${a.likeCount ?? 0}</span>
+                                </button>
+                                ${canMarkBest ? (
+                                    a.isBest
+                                        ? `<button onclick="handleUnmarkBest(${a.id}, ${questionId})" class="text-xs font-medium px-3 py-1 rounded-full bg-white border border-stone-200 text-stone-700 hover:bg-stone-100 transition-colors">Unmark Top</button>`
+                                        : `<button onclick="handleMarkBest(${a.id}, ${questionId})" class="text-xs font-medium px-3 py-1 rounded-full bg-stone-900 text-white hover:bg-stone-700 transition-colors">Mark Top</button>`
+                                ) : ''}
+                            </div>
                             ${getStatusBadge(a.status, true)}
                         </div>
                     </div>
                 `).join('');
                 refreshIcons();
+
+                if (highlightAnswerId != null) {
+                    const target = document.getElementById(`answer-${highlightAnswerId}`);
+                    if (target) {
+                        target.classList.add('ring-2', 'ring-indigo-400');
+                        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        setTimeout(() => {
+                            target.classList.remove('ring-2', 'ring-indigo-400');
+                        }, 2500);
+                    }
+                    highlightAnswerId = null;
+                }
             } catch (error) {
                 console.error('Answers error:', error);
             }
         }
 
+        function filterVisibleAnswers(answers) {
+            if (!answers) return [];
+            const isAdmin = isCurrentUserAdmin();
+            const userId = currentUser && currentUser.id;
+            return answers.filter(a => {
+                if (a.status === 'APPROVED') return true;
+                if (isAdmin) return true;
+                if (userId != null && a.userId != null && String(a.userId) === String(userId)) return true;
+                return false;
+            });
+        }
+
+        async function fetchAnswerLikeMeta(answerId) {
+            try {
+                const countRes = await fetch(`${API_BASE}/api/answers/${answerId}/like-count`);
+                const countData = await countRes.json();
+                const likeCount = countData && typeof countData.likeCount === 'number' ? countData.likeCount : parseInt(countData.likeCount || '0');
+
+                if (!currentUser || !currentUser.id) {
+                    return { likeCount: Number.isNaN(likeCount) ? 0 : likeCount, isLiked: false };
+                }
+
+                const likedRes = await fetch(`${API_BASE}/api/answers/${answerId}/liked/${currentUser.id}`);
+                const likedData = await likedRes.json();
+                return {
+                    likeCount: Number.isNaN(likeCount) ? 0 : likeCount,
+                    isLiked: !!(likedData && likedData.isLiked)
+                };
+            } catch (e) {
+                return { likeCount: 0, isLiked: false };
+            }
+        }
+
+        async function handleLikeAnswer(answerId) {
+            if (!currentUser) {
+                showNotification('Please login to like', 'INFO');
+                showModal('loginModal');
+                return;
+            }
+
+            const btn = document.getElementById(`likeBtn-${answerId}`);
+            if (btn && btn.disabled) {
+                return;
+            }
+            try {
+                const res = await fetch(`${API_BASE}/api/answers/${answerId}/like`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ userId: currentUser.id })
+                });
+                const data = await res.json();
+
+                if (!data.ok) {
+                    showNotification(data.error || 'Like failed', 'INFO');
+                    return;
+                }
+
+                const countEl = document.getElementById(`likeCount-${answerId}`);
+                if (countEl) {
+                    const cur = parseInt(countEl.textContent || '0');
+                    countEl.textContent = Number.isNaN(cur) ? '1' : String(cur + 1);
+                }
+                if (btn) {
+                    btn.disabled = true;
+                    btn.classList.remove('text-stone-400', 'hover:text-stone-700');
+                    btn.classList.add('text-red-600', 'cursor-default');
+                }
+                showNotification('Liked', 'INFO');
+            } catch (e) {
+                showNotification('Like failed', 'INFO');
+            }
+        }
+
         async function loadPendingContent() {
-            if (!currentUser || currentUser.role !== 'ADMIN') return;
+            if (!currentUser || !isCurrentUserAdmin()) return;
             
             try {
                 const response = await fetch(`${API_BASE}/api/admin/content/pending`, {
@@ -688,6 +1007,8 @@
                 hideModal('loginModal');
                 updateUIForLoggedIn();
                 connectWebSocket();
+                fetchOfflineNotifications();
+                loadQuestions();
                 showNotification('Welcome back');
             } catch (error) {
                 alert('Login failed: ' + error.message);
@@ -892,11 +1213,42 @@
             return div.innerHTML;
         }
 
+        function normalizeTimestamp(ts) {
+            if (!ts) return null;
+
+            if (typeof ts === 'string') return ts;
+
+            // Jackson may serialize LocalDateTime as array: [year,month,day,hour,minute,second,nano]
+            if (Array.isArray(ts) && ts.length >= 6) {
+                const [y, mo, d, h, mi, s] = ts;
+                const pad = (n) => String(n).padStart(2, '0');
+                return `${y}-${pad(mo)}-${pad(d)}T${pad(h)}:${pad(mi)}:${pad(s)}`;
+            }
+
+            // Or as object: {year, monthValue, dayOfMonth, hour, minute, second, nano}
+            if (typeof ts === 'object') {
+                const y = ts.year;
+                const mo = ts.monthValue ?? ts.month;
+                const d = ts.dayOfMonth ?? ts.day;
+                const h = ts.hour ?? 0;
+                const mi = ts.minute ?? 0;
+                const s = ts.second ?? 0;
+                if (y && mo && d) {
+                    const pad = (n) => String(n).padStart(2, '0');
+                    return `${y}-${pad(mo)}-${pad(d)}T${pad(h)}:${pad(mi)}:${pad(s)}`;
+                }
+            }
+
+            return null;
+        }
+        
         function formatDate(dateStr) {
             if (!dateStr) return '';
-            return new Date(dateStr).toLocaleDateString('en-US', {
-                month: 'short', day: 'numeric', year: 'numeric'
-            });
+
+            const date = new Date(dateStr);
+            if (Number.isNaN(date.getTime())) return '';
+
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         }
 
         function getStatusBadge(status, small = false) {
